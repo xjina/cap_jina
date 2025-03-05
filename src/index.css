@@ -98,29 +98,6 @@ select {
   animation: slideOutDown 0.3s ease forwards;
 }
 
-/* 선택 효과 스타일 */
-.bg-kmu-blue.text-white {
-  position: relative;
-  overflow: hidden;
-}
-
-.bg-kmu-blue.text-white::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.bg-kmu-blue.text-white:active::after {
-  opacity: 1;
-}
-
 /* 선택된 단과대학 스타일 */
 .border-l-4.border-kmu-blue {
   transition: all 0.3s ease;
