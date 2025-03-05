@@ -141,7 +141,7 @@ const TimetableForm = () => {
   const getButtonClass = (currentValue, buttonValue) => {
     return `py-2 px-3 rounded-md text-center transition-all duration-200 font-medium 
       ${currentValue === buttonValue
-        ? 'bg-kmu-blue text-white shadow-md transform scale-105'
+        ? 'bg-kmu-blue text-white shadow-md'
         : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow'
       }`
   }
@@ -160,7 +160,7 @@ const TimetableForm = () => {
     const isSelected = selectedDeptTemp === deptValue || formData.department === deptValue
     return `w-full py-3 px-4 rounded-lg text-left font-medium transition-all duration-200
       ${isSelected
-        ? 'bg-kmu-blue text-white shadow-md transform scale-102'
+        ? 'bg-kmu-blue text-white shadow-md'
         : 'bg-gray-50 hover:bg-gray-100 text-gray-700 hover:shadow'
       }`
   }
@@ -255,7 +255,7 @@ const TimetableForm = () => {
         <div className="flex justify-center">
           <button 
             type="submit" 
-            className="bg-kmu-blue text-white px-6 sm:px-8 md:px-10 py-3 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-medium text-base sm:text-lg shadow-md hover:shadow-lg transform hover:scale-105"
+            className="bg-kmu-blue text-white px-6 sm:px-8 md:px-10 py-3 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-medium text-base sm:text-lg shadow-md hover:shadow-lg"
           >
             시간표 추천
           </button>

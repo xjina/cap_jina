@@ -67,11 +67,6 @@ select {
   to { transform: translateY(100%); }
 }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
 .modal-overlay {
   animation: fadeIn 0.3s ease forwards;
 }
@@ -105,9 +100,4 @@ select {
 
 .border-l-4.border-kmu-blue:hover {
   transform: translateX(4px);
-}
-
-/* 선택 버튼 효과 */
-.transform.scale-102, .transform.scale-105 {
-  animation: pulse 1s ease-in-out;
 } 
