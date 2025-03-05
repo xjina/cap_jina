@@ -57,18 +57,80 @@ select {
   to { transform: translateX(100%); }
 }
 
-.modal-overlay {
-  animation: fadeIn 0.3s ease forwards;
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
-.modal-content {
-  animation: slideIn 0.3s ease forwards;
+@keyframes slideOutDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.modal-overlay {
+  animation: fadeIn 0.3s ease forwards;
 }
 
 .modal-overlay.closing {
   animation: fadeOut 0.3s ease forwards;
 }
 
+/* 헤더 모달 애니메이션 */
+.modal-content {
+  animation: slideIn 0.3s ease forwards;
+}
+
 .modal-content.closing {
   animation: slideOut 0.3s ease forwards;
+}
+
+/* 학과 선택 모달 애니메이션 */
+.fixed.inset-x-0.bottom-0 {
+  animation: slideInUp 0.3s ease forwards;
+}
+
+.fixed.inset-x-0.bottom-0.closing {
+  animation: slideOutDown 0.3s ease forwards;
+}
+
+/* 선택 효과 스타일 */
+.bg-kmu-blue.text-white {
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-kmu-blue.text-white::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.bg-kmu-blue.text-white:active::after {
+  opacity: 1;
+}
+
+/* 선택된 단과대학 스타일 */
+.border-l-4.border-kmu-blue {
+  transition: all 0.3s ease;
+}
+
+.border-l-4.border-kmu-blue:hover {
+  transform: translateX(4px);
+}
+
+/* 선택 버튼 효과 */
+.transform.scale-102, .transform.scale-105 {
+  animation: pulse 1s ease-in-out;
 } 
