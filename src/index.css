@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 모바일 화면에서 폼 요소 스타일 조정 */
+@media (max-width: 640px) {
+  select, input, button {
+    font-size: 16px !important; /* iOS에서 자동 확대 방지 */
+  }
+  
+  /* 모바일에서 간격 조정 */
+  .space-y-2 > * + * {
+    margin-top: 0.375rem;
+  }
+  
+  /* 모바일에서 레이블 크기 조정 */
+  label {
+    font-size: 0.875rem;
+  }
+}
+
+/* 선택 요소 스타일 개선 */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* 모달 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+.modal-overlay {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.modal-content {
+  animation: slideIn 0.3s ease forwards;
+}
+
+.modal-overlay.closing {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+.modal-content.closing {
+  animation: slideOut 0.3s ease forwards;
+} 
