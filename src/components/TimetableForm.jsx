@@ -7,8 +7,10 @@ const TimetableForm = () => {
     year: '2', // 1학년에서 2학년으로 변경
     semester: '1',
     department: '',
+    departmentLabel: '학과 선택', // 학과 이름 표시용
     majorCredits: '3',
-    generalCredits: '3'
+    generalCredits: '3',
+    generalAreas: [] // 선택된 교양 영역들을 저장할 배열
   })
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -50,6 +52,16 @@ const TimetableForm = () => {
     }
   ]
 
+  // 교양 영역 데이터 추가
+  const generalAreas = [
+    { id: 'literature', name: '문학과예술' },
+    { id: 'society', name: '사회와문화' },
+    { id: 'global', name: '글로벌리더십' },
+    { id: 'science', name: '과학과기술' },
+    { id: 'career', name: '진로탐색/자기개발/창업' },
+    { id: 'philosophy', name: '철학과역사' }
+  ]
+
   // 현재 선택된 학과 정보 가져오기
   const getCurrentDepartmentLabel = () => {
     for (const college of collegesAndDepartments) {
@@ -68,7 +80,21 @@ const TimetableForm = () => {
     return null
   }
 
+  // 학점 제한 검사 함수 추가
+  const checkTotalCredits = (majorCredits, generalCredits) => {
+    const total = Number(majorCredits) + Number(generalCredits)
+    return total <= 20
+  }
+
   const handleButtonSelect = (field, value) => {
+    if (field === 'majorCredits') {
+      const wouldBeValid = checkTotalCredits(value, formData.generalCredits)
+      if (!wouldBeValid) {
+        alert('전공학점과 교양학점의 합이 20학점을 초과할 수 없습니다.')
+        return
+      }
+    }
+    
     setFormData(prevState => ({
       ...prevState,
       [field]: value
@@ -77,7 +103,11 @@ const TimetableForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // 여기서 API 호출 또는 다른 처리를 수행할 수 있습니다.
+    // 교양 영역이 선택되지 않았을 경우 알림
+    if (formData.generalCredits !== '0' && formData.generalAreas.length === 0) {
+      alert('교양 학점을 선택했다면 최소 1개 이상의 교양 영역을 선택해주세요.')
+      return
+    }
     console.log('제출된 데이터:', formData)
     alert('시간표 생성 요청이 제출되었습니다.')
   }
@@ -112,6 +142,71 @@ const TimetableForm = () => {
       handleButtonSelect('department', deptValue)
       closeModal()
     }, 150)
+  }
+
+  // 교양 영역 처리 함수 추가
+  const handleGeneralAreaToggle = (areaId) => {
+    setFormData(prevState => {
+      const maxAreas = getMaxSelectableAreas(prevState.generalCredits)
+      const isSelected = prevState.generalAreas.includes(areaId)
+
+      // 이미 선택된 경우는 항상 제거 가능
+      if (isSelected) {
+        return {
+          ...prevState,
+          generalAreas: prevState.generalAreas.filter(id => id !== areaId)
+        }
+      }
+
+      // 새로 선택하는 경우, 최대 선택 가능 개수 확인
+      if (prevState.generalAreas.length >= maxAreas) {
+        alert(`교양 ${prevState.generalCredits}학점은 최대 ${maxAreas}개 영역까지 선택 가능합니다.`)
+        return prevState
+      }
+
+      return {
+        ...prevState,
+        generalAreas: [...prevState.generalAreas, areaId]
+      }
+    })
+  }
+
+  // 교양 영역 선택 여부 확인 함수
+  const isGeneralAreaSelected = (areaId) => {
+    return formData.generalAreas.includes(areaId)
+  }
+
+  // 교양학점에 따른 최대 선택 가능한 영역 수 계산
+  const getMaxSelectableAreas = (credits) => {
+    return Math.min(Math.floor(Number(credits) / 3), 6)
+  }
+
+  // 교양학점 변경 시 선택된 영역 검사
+  const handleGeneralCreditsChange = (credits) => {
+    const wouldBeValid = checkTotalCredits(formData.majorCredits, credits)
+    if (!wouldBeValid) {
+      alert('전공학점과 교양학점의 합이 20학점을 초과할 수 없습니다.')
+      return
+    }
+
+    const maxAreas = getMaxSelectableAreas(credits)
+    
+    setFormData(prevState => {
+      // 현재 선택된 영역이 새로운 최대 개수를 초과하는 경우
+      if (prevState.generalAreas.length > maxAreas) {
+        alert(`교양 ${credits}학점은 최대 ${maxAreas}개 영역까지 선택 가능합니다.\n초과 선택된 영역이 초기화됩니다.`)
+        return {
+          ...prevState,
+          generalCredits: credits,
+          generalAreas: prevState.generalAreas.slice(0, maxAreas)
+        }
+      }
+
+      return {
+        ...prevState,
+        generalCredits: credits
+      }
+    })
   }
 
   // 컴포넌트 언마운트 시 타이머 정리
@@ -156,10 +251,11 @@ const TimetableForm = () => {
     return `department-button ${isSelected ? 'department-button-active' : ''}`
   }
 
-  const handleDepartmentSelect = (deptValue) => {
+  const handleDepartmentSelect = (deptValue, deptLabel) => {
     setFormData(prevState => ({
       ...prevState,
-      department: deptValue
+      department: deptValue,
+      departmentLabel: deptLabel
     }))
   }
 
@@ -237,18 +333,51 @@ const TimetableForm = () => {
             </div>
           </div>
 
-          {/* 교양학점 버튼 */}
+          {/* 교양학점 섹션 */}
           <div className="mb-8">
             <label className="block text-sm font-medium text-gray-700 mb-3">교양학점</label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            {/* 교양학점 수 선택 */}
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-4">
               {creditOptions.map((credit) => (
                 <button
                   key={`general-${credit}`}
                   type="button"
                   className={getButtonClass(formData.generalCredits, String(credit))}
-                  onClick={() => handleButtonSelect('generalCredits', String(credit))}
+                  onClick={() => handleGeneralCreditsChange(String(credit))}
                 >
                   {credit}학점
+                </button>
+              ))}
+            </div>
+            
+            {/* 교양 영역 선택 */}
+            <label className="block text-sm font-medium text-gray-700 mb-3">교양 영역 선택</label>
+            <div className="grid grid-cols-2 gap-3">
+              {generalAreas.map((area) => (
+                <button
+                  key={area.id}
+                  type="button"
+                  className={`text-left px-4 py-3 rounded-md border ${
+                    isGeneralAreaSelected(area.id)
+                      ? 'border-kmu-blue bg-blue-50 text-kmu-blue'
+                      : 'border-gray-300 hover:bg-gray-50'
+                  } transition-all duration-200`}
+                  onClick={() => handleGeneralAreaToggle(area.id)}
+                >
+                  <div className="flex items-center">
+                    <div className={`w-4 h-4 border rounded mr-3 ${
+                      isGeneralAreaSelected(area.id)
+                        ? 'bg-kmu-blue border-kmu-blue'
+                        : 'border-gray-400'
+                    }`}>
+                      {isGeneralAreaSelected(area.id) && (
+                        <svg className="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    {area.name}
+                  </div>
                 </button>
               ))}
             </div>
@@ -269,7 +398,6 @@ const TimetableForm = () => {
         <DepartmentModal 
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          collegesAndDepartments={collegesAndDepartments}
           onSelectDepartment={handleDepartmentSelect}
           currentDepartment={formData.department}
         />

@@ -1,10 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import './DepartmentModal.css';
 
+const collegesAndDepartments = [
+  {
+    id: 'engineering',
+    name: '공과대학',
+    departments: [
+      { value: 'computer', label: '컴퓨터공학과' },
+      { value: 'software', label: '소프트웨어학과' },
+      { value: 'ai', label: '인공지능학과' },
+      { value: 'electronic', label: '전자공학과' },
+      { value: 'mechanical', label: '기계공학과' }
+    ]
+  },
+  {
+    id: 'business',
+    name: '경영대학',
+    departments: [
+      { value: 'business', label: '경영학과' },
+      { value: 'accounting', label: '회계학과' },
+      { value: 'international', label: '국제통상학과' }
+    ]
+  },
+  {
+    id: 'social',
+    name: '사회과학대학',
+    departments: [
+      { value: 'psychology', label: '심리학과' },
+      { value: 'sociology', label: '사회학과' },
+      { value: 'media', label: '미디어커뮤니케이션학과' }
+    ]
+  }
+];
+
 const DepartmentModal = ({ 
   isOpen, 
   onClose, 
-  collegesAndDepartments,
   onSelectDepartment,
   currentDepartment
 }) => {
@@ -20,7 +51,6 @@ const DepartmentModal = ({
     }, 300)
   }
 
-  // 모달이 열릴 때마다 초기화
   useEffect(() => {
     if (isOpen) {
       setSelectedCollege(null);
@@ -33,9 +63,9 @@ const DepartmentModal = ({
     setSelectedCollege(college);
   };
 
-  const handleDepartmentSelect = (deptValue) => {
+  const handleDepartmentSelect = (dept) => {
     setTimeout(() => {
-      onSelectDepartment(deptValue);
+      onSelectDepartment(dept.value, dept.label);
       handleClose();
     }, 150);
   };
@@ -89,7 +119,7 @@ const DepartmentModal = ({
                 <button
                   key={dept.value}
                   className={`department-item ${currentDepartment === dept.value ? 'selected' : ''}`}
-                  onClick={() => handleDepartmentSelect(dept.value)}
+                  onClick={() => handleDepartmentSelect(dept)}
                 >
                   {dept.label}
                 </button>
