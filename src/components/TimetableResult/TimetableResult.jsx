@@ -308,6 +308,7 @@ const TimetableResult = () => {
   const [schedule, setSchedule] = useState([])
   const [remoteClasses, setRemoteClasses] = useState([])
   const [isRemoteSelected, setIsRemoteSelected] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
   
   // 화면 크기 변경 감지
   useEffect(() => {
@@ -396,6 +397,10 @@ const TimetableResult = () => {
     if (dummyAlternatives[cls.name]) {
       setAlternatives(dummyAlternatives[cls.name])
       setShowModal(true)
+      // 애니메이션 지연 적용
+      setTimeout(() => {
+        setIsAnimating(true)
+      }, 10)
     } else {
       // 동일 과목 다른 교수 강의가 없을 경우
       alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
@@ -411,6 +416,10 @@ const TimetableResult = () => {
     if (dummyRemoteAlternatives[cls.name]) {
       setAlternatives(dummyRemoteAlternatives[cls.name])
       setShowModal(true)
+      // 애니메이션 지연 적용
+      setTimeout(() => {
+        setIsAnimating(true)
+      }, 10)
     } else {
       // 동일 과목 다른 교수 강의가 없을 경우
       alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
@@ -419,10 +428,14 @@ const TimetableResult = () => {
 
   // 모달 닫기
   const closeModal = () => {
-    setShowModal(false)
-    setSelectedClass(null)
-    setAlternatives([])
-    setIsRemoteSelected(false)
+    setIsAnimating(false)
+    // 애니메이션이 완전히 끝난 후 모달을 닫기
+    setTimeout(() => {
+      setShowModal(false)
+      setSelectedClass(null)
+      setAlternatives([])
+      setIsRemoteSelected(false)
+    }, 300)
   }
 
   // 다른 교수 강의로 교체
@@ -527,16 +540,19 @@ const TimetableResult = () => {
 
   // 대체 강의 모달 렌더링
   const renderAlternativesModal = () => {
-    if (!showModal) return null
+    if (!showModal) return null;
     
     return (
-      <div className="modal-overlay" onClick={closeModal}>
-        <div className="modal-content slide-up" onClick={e => e.stopPropagation()}>
-          <div className="modal-header">
+      <div className="timetable-modal-overlay" onClick={closeModal}>
+        <div 
+          className={`timetable-modal-content ${isAnimating ? 'slide-up' : ''}`} 
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="timetable-modal-header">
             <h3>대체 가능한 강의</h3>
-            <button className="modal-close" onClick={closeModal}>×</button>
+            <button className="timetable-modal-close" onClick={closeModal}>×</button>
           </div>
-          <div className="modal-body">
+          <div className="timetable-modal-body">
             <div className="selected-class">
               <p><strong>현재 선택된 강의:</strong></p>
               <div 
@@ -591,7 +607,7 @@ const TimetableResult = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!formData) {

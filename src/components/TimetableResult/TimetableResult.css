@@ -176,7 +176,7 @@
 }
 
 /* 수업 교체 모달 스타일 */
-.modal-overlay {
+.timetable-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -188,9 +188,15 @@
   align-items: flex-end;
   z-index: 1000;
   padding: 1rem;
+  animation: timetableModalFadeIn 0.3s ease;
 }
 
-.modal-content {
+@keyframes timetableModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.timetable-modal-content {
   background-color: white;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -200,15 +206,16 @@
   overflow-y: auto;
   transform: translateY(100%);
   opacity: 0;
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+  will-change: transform, opacity;
 }
 
-.modal-content.slide-up {
+.timetable-modal-content.slide-up {
   transform: translateY(0);
   opacity: 1;
 }
 
-.modal-header {
+.timetable-modal-header {
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
@@ -216,13 +223,13 @@
   align-items: center;
 }
 
-.modal-header h3 {
+.timetable-modal-header h3 {
   margin: 0;
   font-size: 1.25rem;
   color: var(--kmu-blue);
 }
 
-.modal-close {
+.timetable-modal-close {
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -230,7 +237,7 @@
   color: #6B7280;
 }
 
-.modal-body {
+.timetable-modal-body {
   padding: 1rem;
 }
 
@@ -326,13 +333,17 @@
     font-size: 0.875rem;
   }
   
-  .modal-content {
-    padding: 0.5rem;
-  }
-  
-  .modal-overlay {
+  .timetable-modal-overlay {
     align-items: center;
     padding: 2rem;
+  }
+  
+  .timetable-modal-content {
+    transform: translateY(50px);
+  }
+  
+  .timetable-modal-header h3 {
+    font-size: 1.25rem;
   }
   
   .alternative-name {
@@ -416,15 +427,15 @@
     font-size: 0.65rem;
   }
   
-  .modal-overlay {
+  .timetable-modal-overlay {
     padding: 0.5rem;
   }
   
-  .modal-header h3 {
+  .timetable-modal-header h3 {
     font-size: 1rem;
   }
   
-  .modal-body {
+  .timetable-modal-body {
     padding: 0.5rem;
   }
   
