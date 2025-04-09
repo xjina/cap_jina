@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --kmu-blue: #004098;
+}
+
 body {
   font-family: 'Noto Sans KR', sans-serif;
   margin: 0;
@@ -100,4 +104,4 @@ select {
 
 .border-l-4.border-kmu-blue:hover {
   transform: translateX(4px);
-} 
+}

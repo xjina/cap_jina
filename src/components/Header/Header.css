@@ -1,0 +1,191 @@
+.header {
+  background-color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.header-container {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: space-between; /* 변경: 양쪽 정렬로 수정 */
+  align-items: center;
+  width: 100%; /* 추가: 전체 너비 사용 */
+}
+
+.logo-section { /* 추가: 로고와 텍스트를 감싸는 새로운 컨테이너 */
+  display: flex;
+  align-items: center;
+}
+
+.logo-image {
+  height: 3rem;
+  width: auto;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0.5rem;
+}
+
+.university-name-ko {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--kmu-blue);
+}
+
+.university-name-en {
+  font-size: 0.75rem;
+  color: #6B7280;
+  letter-spacing: 0.05em;
+}
+
+.mobile-menu-button {
+  margin-left: auto; /* 추가: 오른쪽 정렬 */
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  color: var(--kmu-blue);
+}
+
+.mobile-menu-button:hover {
+  background-color: #EBF5FF;
+}
+
+.desktop-nav {
+  display: none;
+}
+
+.nav-button {
+  padding: 0.5rem 1rem;
+  color: var(--kmu-blue);
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.nav-button:hover {
+  background-color: #EBF5FF;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.modal-content {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  background-color: white;
+  z-index: 50;
+  transform: translateX(100%);
+  animation: slideIn 0.3s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.mobile-nav-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-nav-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  color: var(--kmu-blue);
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.mobile-nav-button:hover {
+  background-color: #EBF5FF;
+}
+
+.closing .modal-overlay {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+.closing .modal-content {
+  animation: slideOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@media (min-width: 768px) {
+  .header-container {
+    padding: 1rem 2rem;
+  }
+
+  .logo-image {
+    height: 5rem;
+  }
+
+  .logo-text {
+    margin-left: 1rem;
+  }
+
+  .university-name-ko {
+    font-size: 1.5rem;
+  }
+
+  .university-name-en {
+    font-size: 0.875rem;
+  }
+
+  .mobile-menu-button {
+    display: none;
+  }
+
+  .desktop-nav {
+    display: flex;
+    gap: 1rem;
+    margin-left: auto; /* 추가: 오른쪽 정렬 */
+  }
+}

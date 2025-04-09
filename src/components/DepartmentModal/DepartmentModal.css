@@ -1,0 +1,194 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.modal-content {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-height: 80vh;
+  background-color: white;
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+  z-index: 50;
+  transform: translateY(100%);
+  animation: slideUp 0.3s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content.closing {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--kmu-blue);
+}
+
+.modal-close-button {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  color: #6b7280;
+}
+
+.modal-close-button:hover {
+  background-color: #f3f4f6;
+}
+
+.modal-body {
+  padding: 1rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.college-list,
+.department-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.back-button {
+  width: 100%;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  color: #374151;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.back-button:hover {
+  background-color: #e5e7eb;
+}
+
+.closing {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.college-button,
+.department-button {
+  width: 100%;
+  padding: 1rem;
+  text-align: left;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  color: #374151;
+  transition: all 0.2s;
+}
+
+.college-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.college-button:hover,
+.department-button:hover {
+  background-color: #f3f4f6;
+  border-color: var(--kmu-blue);
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.modal-overlay.closing {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.dept-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.dept-modal-content {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-height: 80vh;
+  background-color: white;
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+  z-index: 50;
+  transform: translateY(100%);
+  animation: slideUp 0.3s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+}
+
+.dept-modal-overlay.closing {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+.dept-modal-content.closing {
+  animation: slideDown 0.3s ease-out forwards;
+}
