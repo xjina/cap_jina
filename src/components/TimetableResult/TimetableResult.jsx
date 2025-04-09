@@ -158,6 +158,39 @@ const dummySchedule = [
   }
 ]
 
+// 원격 강의 더미 데이터
+const dummyRemoteClasses = [
+  {
+    id: 101,
+    name: '인공지능과 윤리',
+    professor: '박교수',
+    type: 'major',
+    credits: 3,
+    color: '#EF4444',
+    deadline: '금요일 23:59'
+  },
+  {
+    id: 102,
+    name: '디지털 미디어의 이해',
+    professor: '이교수',
+    type: 'general',
+    area: 'digital',
+    credits: 2,
+    color: '#F59E0B',
+    deadline: '일요일 23:59'
+  },
+  {
+    id: 103,
+    name: '창업과 혁신',
+    professor: '최교수',
+    type: 'general',
+    area: 'career',
+    credits: 2,
+    color: '#10B981',
+    deadline: '화요일 23:59'
+  }
+]
+
 const TimetableResult = () => {
   const location = useLocation()
   const formData = location.state
@@ -214,7 +247,31 @@ const TimetableResult = () => {
     })
   }
 
+  // 원격 강의 필터링
+  const getFilteredRemoteClasses = () => {
+    let majorCount = 0
+    let generalCount = 0
+    const majorLimit = parseInt(formData.majorCredits) / 3
+    const generalLimit = parseInt(formData.generalCredits) / 3
+
+    return dummyRemoteClasses.filter(course => {
+      if (course.type === 'major' && majorCount < majorLimit) {
+        majorCount++
+        return true
+      }
+      if (course.type === 'general' && generalCount < generalLimit) {
+        // 교양 영역이 선택되어 있고, 해당 영역의 과목인 경우만 포함
+        if (formData.generalAreas && formData.generalAreas.includes(course.area)) {
+          generalCount++
+          return true
+        }
+      }
+      return false
+    })
+  }
+
   const filteredSchedule = getFilteredSchedule()
+  const filteredRemoteClasses = getFilteredRemoteClasses()
 
   // 특정 교시에 해당하는 수업 찾기
   const findClass = (day, period) => {
@@ -266,6 +323,36 @@ const TimetableResult = () => {
     const cls = findClass(day, period)
     if (!cls) return true
     return cls.startPeriod === period
+  }
+
+  // 원격 강의 바 렌더링
+  const renderRemoteClasses = () => {
+    if (filteredRemoteClasses.length === 0) return null
+    
+    return (
+      <div className="remote-classes-container">
+        <h2 className="remote-classes-title">원격 강의</h2>
+        <div className="remote-classes-list">
+          {filteredRemoteClasses.map(course => (
+            <div 
+              key={course.id} 
+              className="remote-class-item"
+              style={{ 
+                backgroundColor: `${course.color}15`,
+                borderLeft: `4px solid ${course.color}`
+              }}
+            >
+              <div className="remote-class-name">{course.name}</div>
+              <div className="remote-class-info">
+                <span className="remote-class-professor">{course.professor}</span>
+                <span className="remote-class-credits">{course.credits}학점</span>
+                <span className="remote-class-deadline">마감: {course.deadline}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   if (!formData) {
@@ -329,6 +416,8 @@ const TimetableResult = () => {
           </tbody>
         </table>
       </div>
+
+      {renderRemoteClasses()}
     </main>
   )
 }
