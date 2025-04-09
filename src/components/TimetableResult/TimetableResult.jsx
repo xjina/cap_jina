@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import './TimetableResult.css'
 
@@ -158,6 +158,76 @@ const dummySchedule = [
   }
 ]
 
+// 동일 과목 다른 교수 더미 데이터
+const dummyAlternatives = {
+  '운영체제': [
+    {
+      id: 101,
+      name: '운영체제',
+      professor: '박교수',
+      type: 'major',
+      day: '화',
+      startPeriod: 1,
+      endPeriod: 2,
+      location: '공학관 304',
+      credits: 3,
+      color: '#4F46E5'
+    },
+    {
+      id: 102,
+      name: '운영체제',
+      professor: '이교수',
+      type: 'major',
+      day: '수',
+      startPeriod: 7,
+      endPeriod: 8,
+      location: '공학관 404',
+      credits: 3,
+      color: '#4F46E5'
+    }
+  ],
+  '데이터베이스': [
+    {
+      id: 201,
+      name: '데이터베이스',
+      professor: '홍교수',
+      type: 'major',
+      day: '목',
+      startPeriod: 1,
+      endPeriod: 2,
+      location: '공학관 205',
+      credits: 3,
+      color: '#7C3AED'
+    },
+    {
+      id: 202,
+      name: '데이터베이스',
+      professor: '최교수',
+      type: 'major',
+      day: '금',
+      startPeriod: 5,
+      endPeriod: 6,
+      location: '공학관 306',
+      credits: 3,
+      color: '#7C3AED'
+    }
+  ],
+  '컴퓨터네트워크': [
+    {
+      id: 301,
+      name: '컴퓨터네트워크',
+      professor: '정교수',
+      type: 'major',
+      day: '월',
+      startPeriod: 5,
+      endPeriod: 6,
+      location: '공학관 301',
+      credits: 3,
+      color: '#EC4899'
+    }
+  ]
+}
+
 // 원격 강의 더미 데이터
 const dummyRemoteClasses = [
   {
@@ -191,12 +261,53 @@ const dummyRemoteClasses = [
   }
 ]
 
+// 원격 강의 대체 데이터
+const dummyRemoteAlternatives = {
+  '인공지능과 윤리': [
+    {
+      id: 401,
+      name: '인공지능과 윤리',
+      professor: '김교수',
+      type: 'major',
+      credits: 3,
+      color: '#EF4444',
+      deadline: '일요일 23:59'
+    },
+    {
+      id: 402,
+      name: '인공지능과 윤리',
+      professor: '최교수',
+      type: 'major',
+      credits: 3,
+      color: '#EF4444',
+      deadline: '토요일 23:59'
+    }
+  ],
+  '디지털 미디어의 이해': [
+    {
+      id: 501,
+      name: '디지털 미디어의 이해',
+      professor: '윤교수',
+      type: 'general',
+      area: 'digital',
+      credits: 2,
+      color: '#F59E0B',
+      deadline: '월요일 23:59'
+    }
+  ]
+}
+
 const TimetableResult = () => {
   const location = useLocation()
   const formData = location.state
   const days = ['월', '화', '수', '목', '금']
-  const tableRef = useRef(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const [selectedClass, setSelectedClass] = useState(null)
+  const [alternatives, setAlternatives] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [schedule, setSchedule] = useState([])
+  const [remoteClasses, setRemoteClasses] = useState([])
+  const [isRemoteSelected, setIsRemoteSelected] = useState(false)
   
   // 화면 크기 변경 감지
   useEffect(() => {
@@ -208,6 +319,12 @@ const TimetableResult = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
   
+  // 초기 스케줄 설정
+  useEffect(() => {
+    setSchedule(getFilteredSchedule())
+    setRemoteClasses(getFilteredRemoteClasses())
+  }, [])
+
   // 시간대 설정
   const timeSlots = [
     { period: 1, time: '9' },
@@ -228,8 +345,6 @@ const TimetableResult = () => {
     let generalCount = 0
     const majorLimit = parseInt(formData.majorCredits) / 3
     const generalLimit = parseInt(formData.generalCredits) / 3
-
-    console.log('Selected general areas:', formData.generalAreas) // 디버깅용
 
     return dummySchedule.filter(course => {
       if (course.type === 'major' && majorCount < majorLimit) {
@@ -270,12 +385,67 @@ const TimetableResult = () => {
     })
   }
 
-  const filteredSchedule = getFilteredSchedule()
   const filteredRemoteClasses = getFilteredRemoteClasses()
+
+  // 강의 선택 처리
+  const handleClassClick = (cls) => {
+    setSelectedClass(cls)
+    setIsRemoteSelected(false)
+    
+    // 동일 과목의 다른 교수 강의 찾기
+    if (dummyAlternatives[cls.name]) {
+      setAlternatives(dummyAlternatives[cls.name])
+      setShowModal(true)
+    } else {
+      // 동일 과목 다른 교수 강의가 없을 경우
+      alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
+    }
+  }
+
+  // 원격 강의 선택 처리
+  const handleRemoteClassClick = (cls) => {
+    setSelectedClass(cls)
+    setIsRemoteSelected(true)
+    
+    // 동일 과목의 다른 교수 강의 찾기
+    if (dummyRemoteAlternatives[cls.name]) {
+      setAlternatives(dummyRemoteAlternatives[cls.name])
+      setShowModal(true)
+    } else {
+      // 동일 과목 다른 교수 강의가 없을 경우
+      alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
+    }
+  }
+
+  // 모달 닫기
+  const closeModal = () => {
+    setShowModal(false)
+    setSelectedClass(null)
+    setAlternatives([])
+    setIsRemoteSelected(false)
+  }
+
+  // 다른 교수 강의로 교체
+  const replaceClass = (newClass) => {
+    if (isRemoteSelected) {
+      // 원격 강의 교체
+      const updatedRemoteClasses = remoteClasses.filter(cls => cls.id !== selectedClass.id)
+      updatedRemoteClasses.push(newClass)
+      setRemoteClasses(updatedRemoteClasses)
+    } else {
+      // 일반 강의 교체
+      const updatedSchedule = schedule.filter(cls => cls.id !== selectedClass.id)
+      updatedSchedule.push(newClass)
+      setSchedule(updatedSchedule)
+    }
+    
+    // 모달 닫기
+    closeModal()
+  }
 
   // 특정 교시에 해당하는 수업 찾기
   const findClass = (day, period) => {
-    return filteredSchedule.find(
+    return schedule.find(
       cls => 
         cls.day === day && 
         period >= cls.startPeriod && 
@@ -298,8 +468,10 @@ const TimetableResult = () => {
           style={{ 
             backgroundColor: `${cls.color}15`,
             borderLeft: `4px solid ${cls.color}`,
-            height: `${heightPx}px`
+            height: `${heightPx}px`,
+            cursor: 'pointer'
           }}
+          onClick={() => handleClassClick(cls)}
         >
           <div className="class-name">{cls.name}</div>
           {/* 모바일에서는 정보를 줄여서 표시 */}
@@ -327,25 +499,96 @@ const TimetableResult = () => {
 
   // 원격 강의 바 렌더링
   const renderRemoteClasses = () => {
-    if (filteredRemoteClasses.length === 0) return null
+    if (remoteClasses.length === 0) return null
     
     return (
       <div className="remote-classes-container">
         <h2 className="remote-classes-title">원격 강의</h2>
         <div className="remote-classes-list">
-          {filteredRemoteClasses.map(course => (
+          {remoteClasses.map(course => (
             <div 
               key={course.id} 
               className="remote-class-item"
               style={{ 
                 backgroundColor: `${course.color}15`,
-                borderLeft: `4px solid ${course.color}`
+                borderLeft: `4px solid ${course.color}`,
+                cursor: 'pointer'
               }}
+              onClick={() => handleRemoteClassClick(course)}
             >
               <div className="remote-class-name">{course.name}</div>
               <div className="remote-class-professor">{course.professor}</div>
             </div>
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  // 대체 강의 모달 렌더링
+  const renderAlternativesModal = () => {
+    if (!showModal) return null
+    
+    return (
+      <div className="modal-overlay" onClick={closeModal}>
+        <div className="modal-content slide-up" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>대체 가능한 강의</h3>
+            <button className="modal-close" onClick={closeModal}>×</button>
+          </div>
+          <div className="modal-body">
+            <div className="selected-class">
+              <p><strong>현재 선택된 강의:</strong></p>
+              <div 
+                className="alternative-item selected"
+                style={{ 
+                  backgroundColor: `${selectedClass.color}15`,
+                  borderLeft: `4px solid ${selectedClass.color}`
+                }}
+              >
+                <div className="alternative-name">{selectedClass.name}</div>
+                <div className="alternative-details">
+                  <div><strong>교수:</strong> {selectedClass.professor}</div>
+                  {!isRemoteSelected ? (
+                    <>
+                      <div><strong>시간:</strong> {selectedClass.day}요일 {timeSlots[selectedClass.startPeriod-1].time}-{timeSlots[selectedClass.endPeriod-1].time}</div>
+                      <div><strong>위치:</strong> {selectedClass.location}</div>
+                    </>
+                  ) : (
+                    <div><strong>마감일:</strong> {selectedClass.deadline}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="alternatives-list">
+              <p><strong>대체 가능한 강의:</strong></p>
+              {alternatives.map(alt => (
+                <div 
+                  key={alt.id}
+                  className="alternative-item"
+                  style={{ 
+                    backgroundColor: `${alt.color}15`,
+                    borderLeft: `4px solid ${alt.color}`
+                  }}
+                  onClick={() => replaceClass(alt)}
+                >
+                  <div className="alternative-name">{alt.name}</div>
+                  <div className="alternative-details">
+                    <div><strong>교수:</strong> {alt.professor}</div>
+                    {!isRemoteSelected ? (
+                      <>
+                        <div><strong>시간:</strong> {alt.day}요일 {timeSlots[alt.startPeriod-1].time}-{timeSlots[alt.endPeriod-1].time}</div>
+                        <div><strong>위치:</strong> {alt.location}</div>
+                      </>
+                    ) : (
+                      <div><strong>마감일:</strong> {alt.deadline}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -373,7 +616,7 @@ const TimetableResult = () => {
       </div>
 
       <div className="timetable-container">
-        <table className="timetable" ref={tableRef}>
+        <table className="timetable">
           <thead>
             <tr>
               <th className="time-header"></th>
@@ -414,6 +657,7 @@ const TimetableResult = () => {
       </div>
 
       {renderRemoteClasses()}
+      {renderAlternativesModal()}
     </main>
   )
 }
