@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './TimetableForm.css'
+import DepartmentModal from './DepartmentModal/DepartmentModal'
 
 const TimetableForm = () => {
   const [formData, setFormData] = useState({
-    year: '1',
+    year: '2', // 1학년에서 2학년으로 변경
     semester: '1',
-    department: 'computer',
+    department: '',
     majorCredits: '3',
     generalCredits: '3'
   })
@@ -155,6 +156,13 @@ const TimetableForm = () => {
     return `department-button ${isSelected ? 'department-button-active' : ''}`
   }
 
+  const handleDepartmentSelect = (deptValue) => {
+    setFormData(prevState => ({
+      ...prevState,
+      department: deptValue
+    }))
+  }
+
   return (
     <main className="timetable-main">
       <div className="timetable-header">
@@ -166,8 +174,8 @@ const TimetableForm = () => {
           {/* 학년 버튼 */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">학년</label>
-            <div className="grid grid-cols-4 gap-3">
-              {[1, 2, 3, 4].map((year) => (
+            <div className="grid grid-cols-3 gap-3"> {/* grid-cols-4에서 grid-cols-3으로 변경 */}
+              {[2, 3, 4].map((year) => ( // 1 제거, [2,3,4]만 매핑
                 <button
                   key={`year-${year}`}
                   type="button"
@@ -202,7 +210,7 @@ const TimetableForm = () => {
             <label className="block text-sm font-medium text-gray-700 mb-3">학과</label>
             <button
               type="button"
-              onClick={openModal}
+              onClick={() => setIsModalOpen(true)}
               className="w-full py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-left text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-kmu-blue focus:border-kmu-blue transition-all duration-200 flex justify-between items-center"
             >
               <span>{getCurrentDepartmentLabel()}</span>
@@ -258,85 +266,13 @@ const TimetableForm = () => {
         </form>
 
         {/* 학과 선택 모달 */}
-        {isModalOpen && (
-          <>
-            {/* 배경 오버레이 */}
-            <div 
-              className={`fixed inset-0 bg-black bg-opacity-50 z-40 modal-overlay ${isClosing ? 'closing' : ''}`}
-              onClick={closeModal}
-            ></div>
-            
-            {/* 모달 내용 */}
-            <div className={`fixed inset-x-0 bottom-0 max-h-[80vh] bg-white rounded-t-xl shadow-xl z-50 ${isClosing ? 'closing' : ''}`}>
-              <div className="flex flex-col h-full max-h-[80vh]">
-                <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
-                  <h3 className="text-lg font-bold text-kmu-blue">
-                    {selectedCollege ? '학과 선택' : '단과대학 선택'}
-                  </h3>
-                  <button 
-                    onClick={closeModal}
-                    className="p-2 rounded-md text-gray-500 hover:bg-gray-100"
-                    aria-label="닫기"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto p-4">
-                  {!selectedCollege ? (
-                    // 단과대학 목록
-                    <div className="grid grid-cols-1 gap-3">
-                      {collegesAndDepartments.map((college) => (
-                        <button
-                          key={college.id}
-                          type="button"
-                          className={getCollegeButtonClass(college.id)}
-                          onClick={() => selectCollege(college.id)}
-                        >
-                          <span>{college.name}</span>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    // 선택된 단과대학의 학과 목록
-                    <div className="grid grid-cols-1 gap-3">
-                      {collegesAndDepartments.find(c => c.id === selectedCollege)?.departments.map((dept) => (
-                        <button
-                          key={dept.value}
-                          type="button"
-                          className={getDepartmentButtonClass(dept.value)}
-                          onClick={() => selectDepartment(dept.value)}
-                        >
-                          {dept.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                {selectedCollege && (
-                  <div className="p-4 border-t sticky bottom-0 bg-white">
-                    <button
-                      type="button"
-                      className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-md font-medium transition-colors duration-200 flex items-center justify-center"
-                      onClick={() => setSelectedCollege(null)}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                      </svg>
-                      단과대학 선택으로 돌아가기
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
+        <DepartmentModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          collegesAndDepartments={collegesAndDepartments}
+          onSelectDepartment={handleDepartmentSelect}
+          currentDepartment={formData.department}
+        />
       </div>
     </main>
   )

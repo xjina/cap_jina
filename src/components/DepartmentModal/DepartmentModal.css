@@ -1,15 +1,16 @@
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 40;
-  opacity: 0;
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.3s ease-out;
 }
 
+.modal-overlay.closing {
+  animation: fadeOut 0.3s ease-out;
+}
+
+/* 모달 기본 스타일 수정 */
 .modal-content {
   position: fixed;
   left: 0;
@@ -20,13 +21,14 @@
   background-color: white;
   border-top-left-radius: 0.75rem;
   border-top-right-radius: 0.75rem;
+  box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
   z-index: 50;
+  overflow-y: auto;
   transform: translateY(100%);
   animation: slideUp 0.3s ease-out forwards;
-  display: flex;
-  flex-direction: column;
 }
 
+/* closing 클래스 수정 */
 .modal-content.closing {
   animation: slideDown 0.3s ease-out forwards;
 }
@@ -37,21 +39,26 @@
   align-items: center;
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
 }
 
 .modal-title {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--kmu-blue);
 }
 
-.modal-close-button {
+.modal-close {
   padding: 0.5rem;
-  border-radius: 0.375rem;
   color: #6b7280;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
 }
 
-.modal-close-button:hover {
+.modal-close:hover {
   background-color: #f3f4f6;
 }
 
@@ -65,30 +72,90 @@
 .department-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
   width: 100%;
 }
 
-.back-button {
+.college-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.college-item:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.arrow-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #9ca3af;
+}
+
+.department-item {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-radius: 0.5rem;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.department-item:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.department-item.selected {
+  background-color: var(--kmu-blue);
+  color: white;
+  border-color: var(--kmu-blue);
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+  position: sticky;
+  bottom: 0;
+  background: white;
+}
+
+.back-button {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  padding: 0.75rem;
   background-color: #f3f4f6;
-  color: #374151;
-  border-radius: 0.375rem;
-  transition: all 0.2s;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
 .back-button:hover {
   background-color: #e5e7eb;
 }
 
+.back-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  margin-right: 0.5rem;
+}
+
 .closing {
   animation: slideDown 0.3s ease-out forwards;
 }
 
+/* 애니메이션 키프레임 수정 */
 @keyframes slideUp {
   from {
     transform: translateY(100%);
@@ -105,40 +172,6 @@
   to {
     transform: translateY(100%);
   }
-}
-
-.college-button,
-.department-button {
-  width: 100%;
-  padding: 1rem;
-  text-align: left;
-  background-color: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  color: #374151;
-  transition: all 0.2s;
-}
-
-.college-button {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.college-button:hover,
-.department-button:hover {
-  background-color: #f3f4f6;
-  border-color: var(--kmu-blue);
-}
-
-.modal-footer {
-  padding: 1rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.modal-overlay.closing {
-  animation: fadeOut 0.3s ease-out forwards;
 }
 
 @keyframes fadeIn {
@@ -159,13 +192,17 @@
   }
 }
 
+/* 불필요한 dept-modal 관련 클래스 제거 */
 .dept-modal-overlay {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 40;
-  opacity: 0;
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: deptFadeIn 0.3s ease-out;
+}
+
+.dept-modal-overlay.closing {
+  animation: deptFadeOut 0.3s ease-out;
 }
 
 .dept-modal-content {
@@ -178,17 +215,85 @@
   background-color: white;
   border-top-left-radius: 0.75rem;
   border-top-right-radius: 0.75rem;
+  box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
   z-index: 50;
+  overflow-y: auto;
   transform: translateY(100%);
-  animation: slideUp 0.3s ease-out forwards;
-  display: flex;
-  flex-direction: column;
-}
-
-.dept-modal-overlay.closing {
-  animation: fadeOut 0.3s ease-out forwards;
+  animation: deptSlideUp 0.3s ease-out forwards;
 }
 
 .dept-modal-content.closing {
-  animation: slideDown 0.3s ease-out forwards;
+  animation: deptSlideDown 0.3s ease-out forwards;
+}
+
+.dept-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.dept-modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--kmu-blue);
+}
+
+.dept-modal-close {
+  padding: 0.5rem;
+  color: #6b7280;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.dept-modal-close:hover {
+  background-color: #f3f4f6;
+}
+
+.dept-modal-body {
+  padding: 1rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 애니메이션 키프레임 이름도 변경 */
+@keyframes deptSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes deptSlideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes deptFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes deptFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
