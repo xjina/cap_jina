@@ -343,11 +343,7 @@ const TimetableResult = () => {
               }}
             >
               <div className="remote-class-name">{course.name}</div>
-              <div className="remote-class-info">
-                <span className="remote-class-professor">{course.professor}</span>
-                <span className="remote-class-credits">{course.credits}학점</span>
-                <span className="remote-class-deadline">마감: {course.deadline}</span>
-              </div>
+              <div className="remote-class-professor">{course.professor}</div>
             </div>
           ))}
         </div>
