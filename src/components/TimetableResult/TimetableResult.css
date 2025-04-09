@@ -1,33 +1,34 @@
 .timetable-result-main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0.3rem;
   height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .timetable-result-header {
-  margin-bottom: 1rem;
+  margin-bottom: 0.2rem;
   text-align: center;
   flex-shrink: 0;
 }
 
 .timetable-result-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: bold;
   color: var(--kmu-blue);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.1rem;
 }
 
 .timetable-info {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  margin-bottom: 0.1rem;
   flex-wrap: wrap;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }
 
 .timetable-container {
@@ -37,6 +38,7 @@
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  min-height: 0;
 }
 
 .timetable {
@@ -47,28 +49,28 @@
 
 .time-header,
 .day-header {
-  padding: 0.5rem;
+  padding: 0.15rem;
   background-color: var(--kmu-blue);
   color: white;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.75rem;
   text-align: center;
 }
 
 .time-header {
-  width: 50px;
+  width: 30px;
 }
 
 .day-header {
-  width: calc((100% - 50px) / 5);
+  width: calc((100% - 30px) / 5);
 }
 
 .period-cell {
-  width: 50px;
+  width: 30px;
   text-align: center;
   background-color: #f3f4f6;
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 0.75rem;
   border: 1px solid #e5e7eb;
 }
 
@@ -76,89 +78,156 @@
   border: 1px solid #e5e7eb;
   vertical-align: top;
   position: relative;
-  height: calc((100vh - 130px) / 10); /* 헤더 높이와 테이블 헤더 높이를 제외한 나머지 공간을 10개 행으로 나눔 */
+  height: calc((100vh - 80px) / 10);
+  padding: 0.1rem;
+}
+
+.class-cell.has-class {
+  padding: 0;
+}
+
+.class-cell.occupied {
+  padding: 0;
+  border-top: none;
+  border-bottom: none;
+  background-color: transparent;
 }
 
 .class-content {
   height: 100%;
-  padding: 0.25rem;
+  padding: 0.1rem;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .class-name {
   font-weight: 600;
-  font-size: 0.875rem;
-  margin-bottom: 0.125rem;
+  font-size: 0.7rem;
+  margin-bottom: 0.05rem;
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.class-professor,
+.class-location {
+  font-size: 0.6rem;
+  color: #6B7280;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.class-professor,
-.class-location {
-  font-size: 0.75rem;
-  color: #6B7280;
-}
-
+/* 태블릿 및 데스크톱 화면 */
 @media (min-width: 768px) {
   .timetable-result-main {
-    padding: 1.5rem;
+    padding: 0.75rem;
+  }
+
+  .timetable-result-header {
+    margin-bottom: 0.4rem;
   }
 
   .timetable-result-title {
-    font-size: 1.875rem;
+    font-size: 1.75rem;
+    margin-bottom: 0.2rem;
   }
 
   .timetable-info {
     gap: 2rem;
     font-size: 1rem;
+    margin-bottom: 0.2rem;
   }
 
-  .class-content {
-    padding: 0.5rem;
-    font-size: 0.875rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .class-content {
+  .time-header,
+  .day-header {
+    padding: 0.25rem;
     font-size: 1rem;
   }
 
-  .class-professor,
-  .class-location {
-    font-size: 0.875rem;
-  }
-}
-
-@media (max-width: 768px) {
   .time-header {
-    width: 40px;
-    font-size: 0.75rem;
+    width: 50px;
   }
 
   .day-header {
-    font-size: 0.75rem;
-    padding: 0.25rem;
+    width: calc((100% - 50px) / 5);
   }
 
   .period-cell {
-    width: 40px;
-    font-size: 0.75rem;
+    width: 50px;
+    font-size: 1rem;
+  }
+
+  .class-cell {
+    height: calc((100vh - 100px) / 10);
+    padding: 0.2rem;
+  }
+
+  .class-content {
+    padding: 0.3rem;
   }
   
   .class-name {
-    font-size: 0.7rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.1rem;
+    -webkit-line-clamp: 2;
   }
   
   .class-professor,
   .class-location {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
 }
 
 /* 스크롤바 제거 */
 .timetable-container::-webkit-scrollbar {
   display: none;
+}
+
+/* 모바일 가로모드 최적화 */
+@media (max-height: 500px) {
+  .timetable-result-header {
+    margin-bottom: 0.05rem;
+  }
+  
+  .timetable-result-title {
+    font-size: 1rem;
+    margin-bottom: 0.05rem;
+  }
+  
+  .timetable-info {
+    font-size: 0.65rem;
+    gap: 0.35rem;
+    margin-bottom: 0.05rem;
+  }
+  
+  .time-header,
+  .day-header {
+    padding: 0.1rem;
+    font-size: 0.7rem;
+  }
+  
+  .period-cell {
+    font-size: 0.7rem;
+  }
+  
+  .class-cell {
+    height: calc((100vh - 60px) / 10);
+    padding: 0.05rem;
+  }
+  .class-name {
+    font-size: 0.65rem;
+    margin-bottom: 0.05rem;
+    -webkit-line-clamp: 1;
+  }
+  
+  .class-professor,
+  .class-location {
+    font-size: 0.55rem;
+  }
 }

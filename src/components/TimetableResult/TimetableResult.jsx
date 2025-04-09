@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import './TimetableResult.css'
 
@@ -162,8 +162,20 @@ const TimetableResult = () => {
   const location = useLocation()
   const formData = location.state
   const days = ['월', '화', '수', '목', '금']
+  const tableRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   
-  // 시간대 설정 변경
+  // 화면 크기 변경 감지
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  
+  // 시간대 설정 변경 - 모바일에서는 시간대 수를 줄임
   const timeSlots = [
     { period: 1, time: '9' },
     { period: 2, time: '10' },
@@ -220,22 +232,47 @@ const TimetableResult = () => {
     
     if (isStart) {
       const rowSpan = cls.endPeriod - cls.startPeriod + 1
+      // 수업이 여러 교시에 걸쳐 있을 경우 다르게 계산
+      const heightStyle = rowSpan > 1 
+        ? { height: `calc(${rowSpan * 100}% - 2px)` } 
+        : { height: '100%' }
+      
+      // 긴 수업(2교시 이상)에는 더 많은 줄 표시
+      const classNameStyle = {
+        WebkitLineClamp: rowSpan > 1 ? 2 : (isMobile ? 1 : 2)
+      }
+        
       return (
         <div 
           className="class-content"
           style={{ 
             backgroundColor: `${cls.color}15`,
             borderLeft: `4px solid ${cls.color}`,
-            height: `calc(${rowSpan} * 100%)`
+            ...heightStyle
           }}
         >
-          <div className="class-name">{cls.name}</div>
-          <div className="class-professor">{cls.professor}</div>
-          <div className="class-location">{cls.location}</div>
+          <div className="class-name" style={classNameStyle}>{cls.name}</div>
+          {/* 모바일 모드에서는 정보 최소화, 다중 교시에만 추가 정보 표시 */}
+          {!isMobile && (
+            <>
+              <div className="class-professor">{cls.professor}</div>
+              <div className="class-location">{cls.location}</div>
+            </>
+          )}
+          {isMobile && rowSpan > 1 && (
+            <div className="class-professor">{cls.professor}</div>
+          )}
         </div>
       )
     }
     return null
+  }
+
+  // 특정 교시에 해당하는 다른 수업이 있는지 확인
+  const shouldRenderEmpty = (day, period) => {
+    const cls = findClass(day, period)
+    if (!cls) return true
+    return cls.startPeriod === period
   }
 
   if (!formData) {
@@ -260,7 +297,7 @@ const TimetableResult = () => {
       </div>
 
       <div className="timetable-container">
-        <table className="timetable">
+        <table className="timetable" ref={tableRef}>
           <thead>
             <tr>
               <th className="time-header"></th>
@@ -276,12 +313,18 @@ const TimetableResult = () => {
                 {days.map(day => {
                   const cls = findClass(day, period)
                   const isStart = cls?.startPeriod === period
+                  
+                  // 이전 교시에서 시작한 수업이 여기까지 이어지는 경우 렌더링하지 않음
+                  if (!shouldRenderEmpty(day, period) && !isStart) {
+                    return <td key={`${day}-${period}`} className="class-cell occupied"></td>
+                  }
+                  
                   return (
                     <td 
                       key={`${day}-${period}`} 
                       className={`class-cell ${cls ? 'has-class' : ''}`}
                       style={{
-                        padding: cls ? '0' : '0.5rem'
+                        padding: cls ? '0' : (isMobile ? '0.125rem' : '0.25rem')
                       }}
                     >
                       {renderClassCell(cls, isStart)}
