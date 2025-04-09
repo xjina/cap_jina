@@ -538,6 +538,19 @@ const TimetableResult = () => {
     )
   }
 
+  // 시간표 재생성 함수
+  const regenerateTimetable = () => {
+    // 로딩 효과를 위한 상태 변경
+    setSchedule([]);
+    setRemoteClasses([]);
+    
+    // 짧은 지연 후 새로운 시간표 생성 (로딩 효과를 위함)
+    setTimeout(() => {
+      setSchedule(getFilteredSchedule());
+      setRemoteClasses(getFilteredRemoteClasses());
+    }, 500);
+  };
+
   // 대체 강의 모달 렌더링
   const renderAlternativesModal = () => {
     if (!showModal) return null;
@@ -673,6 +686,16 @@ const TimetableResult = () => {
       </div>
 
       {renderRemoteClasses()}
+      
+      <div className="regenerate-button-container">
+        <button 
+          className="regenerate-button"
+          onClick={regenerateTimetable}
+        >
+          동일 조건으로 시간표 재생성
+        </button>
+      </div>
+      
       {renderAlternativesModal()}
     </main>
   )
