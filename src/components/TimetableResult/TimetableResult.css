@@ -1,0 +1,164 @@
+.timetable-result-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.timetable-result-header {
+  margin-bottom: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.timetable-result-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--kmu-blue);
+  margin-bottom: 0.5rem;
+}
+
+.timetable-info {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+}
+
+.timetable-container {
+  flex: 1;
+  display: flex;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.timetable {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.time-header,
+.day-header {
+  padding: 0.5rem;
+  background-color: var(--kmu-blue);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.time-header {
+  width: 50px;
+}
+
+.day-header {
+  width: calc((100% - 50px) / 5);
+}
+
+.period-cell {
+  width: 50px;
+  text-align: center;
+  background-color: #f3f4f6;
+  font-weight: 500;
+  font-size: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.class-cell {
+  border: 1px solid #e5e7eb;
+  vertical-align: top;
+  position: relative;
+  height: calc((100vh - 130px) / 10); /* 헤더 높이와 테이블 헤더 높이를 제외한 나머지 공간을 10개 행으로 나눔 */
+}
+
+.class-content {
+  height: 100%;
+  padding: 0.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.class-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.class-professor,
+.class-location {
+  font-size: 0.75rem;
+  color: #6B7280;
+}
+
+@media (min-width: 768px) {
+  .timetable-result-main {
+    padding: 1.5rem;
+  }
+
+  .timetable-result-title {
+    font-size: 1.875rem;
+  }
+
+  .timetable-info {
+    gap: 2rem;
+    font-size: 1rem;
+  }
+
+  .class-content {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .class-content {
+    font-size: 1rem;
+  }
+
+  .class-professor,
+  .class-location {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .time-header {
+    width: 40px;
+    font-size: 0.75rem;
+  }
+
+  .day-header {
+    font-size: 0.75rem;
+    padding: 0.25rem;
+  }
+
+  .period-cell {
+    width: 40px;
+    font-size: 0.75rem;
+  }
+  
+  .class-name {
+    font-size: 0.7rem;
+  }
+  
+  .class-professor,
+  .class-location {
+    font-size: 0.65rem;
+  }
+}
+
+/* 스크롤바 제거 */
+.timetable-container::-webkit-scrollbar {
+  display: none;
+}

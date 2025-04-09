@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'  // 추가
 import './TimetableForm.css'
 import DepartmentModal from './DepartmentModal/DepartmentModal'
 
 const TimetableForm = () => {
+  const navigate = useNavigate()  // 추가
   const [formData, setFormData] = useState({
     year: '2', // 1학년에서 2학년으로 변경
     semester: '1',
@@ -103,13 +105,20 @@ const TimetableForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // 교양 영역이 선택되지 않았을 경우 알림
+    
+    // 유효성 검사
+    if (!formData.department) {
+      alert('학과를 선택해주세요.')
+      return
+    }
+    
     if (formData.generalCredits !== '0' && formData.generalAreas.length === 0) {
       alert('교양 학점을 선택했다면 최소 1개 이상의 교양 영역을 선택해주세요.')
       return
     }
-    console.log('제출된 데이터:', formData)
-    alert('시간표 생성 요청이 제출되었습니다.')
+    
+    // 결과 페이지로 이동하면서 데이터 전달
+    navigate('/result', { state: formData })
   }
 
   const openModal = () => {
