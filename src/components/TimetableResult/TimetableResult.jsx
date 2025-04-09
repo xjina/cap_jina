@@ -175,7 +175,7 @@ const TimetableResult = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
   
-  // 시간대 설정 변경 - 모바일에서는 시간대 수를 줄임
+  // 시간대 설정
   const timeSlots = [
     { period: 1, time: '9' },
     { period: 2, time: '10' },
@@ -232,27 +232,20 @@ const TimetableResult = () => {
     
     if (isStart) {
       const rowSpan = cls.endPeriod - cls.startPeriod + 1
-      // 수업이 여러 교시에 걸쳐 있을 경우 다르게 계산
-      const heightStyle = rowSpan > 1 
-        ? { height: `calc(${rowSpan * 100}% - 2px)` } 
-        : { height: '100%' }
+      // 고정 픽셀 높이 계산
+      const heightPx = isMobile ? 35 * rowSpan : 50 * rowSpan
       
-      // 긴 수업(2교시 이상)에는 더 많은 줄 표시
-      const classNameStyle = {
-        WebkitLineClamp: rowSpan > 1 ? 2 : (isMobile ? 1 : 2)
-      }
-        
       return (
         <div 
           className="class-content"
           style={{ 
             backgroundColor: `${cls.color}15`,
             borderLeft: `4px solid ${cls.color}`,
-            ...heightStyle
+            height: `${heightPx}px`
           }}
         >
-          <div className="class-name" style={classNameStyle}>{cls.name}</div>
-          {/* 모바일 모드에서는 정보 최소화, 다중 교시에만 추가 정보 표시 */}
+          <div className="class-name">{cls.name}</div>
+          {/* 모바일에서는 정보를 줄여서 표시 */}
           {!isMobile && (
             <>
               <div className="class-professor">{cls.professor}</div>
@@ -324,7 +317,7 @@ const TimetableResult = () => {
                       key={`${day}-${period}`} 
                       className={`class-cell ${cls ? 'has-class' : ''}`}
                       style={{
-                        padding: cls ? '0' : (isMobile ? '0.125rem' : '0.25rem')
+                        padding: cls ? '0' : undefined
                       }}
                     >
                       {renderClassCell(cls, isStart)}
