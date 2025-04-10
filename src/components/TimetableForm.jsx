@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'  // 추가
-import axios from 'axios' // axios 추가
+import { useNavigate } from 'react-router-dom'
 import './TimetableForm.css'
 import DepartmentModal from './DepartmentModal/DepartmentModal'
 
@@ -8,23 +7,23 @@ import DepartmentModal from './DepartmentModal/DepartmentModal'
 const API_URL = 'http://15.164.214.242:5000/api/timetable'
 
 const TimetableForm = () => {
-  const navigate = useNavigate()  // 추가
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    year: '2', // 1학년에서 2학년으로 변경
+    year: '2',
     semester: '1',
     department: '',
-    departmentLabel: '학과 선택', // 학과 이름 표시용
+    departmentLabel: '학과 선택',
     majorCredits: '3',
     generalCredits: '3',
-    generalAreas: [] // 선택된 교양 영역들을 저장할 배열
+    generalAreas: []
   })
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedCollege, setSelectedCollege] = useState(null)
   const [isClosing, setIsClosing] = useState(false)
-  const [selectedDeptTemp, setSelectedDeptTemp] = useState(null) // 임시 선택 상태
+  const [selectedDeptTemp, setSelectedDeptTemp] = useState(null)
   const closeTimeoutRef = useRef(null)
-  const [isLoading, setIsLoading] = useState(false) // 로딩 상태 추가
+  const [isLoading, setIsLoading] = useState(false)
 
   // 단과대학 및 학과 데이터
   const collegesAndDepartments = [
@@ -59,7 +58,7 @@ const TimetableForm = () => {
     }
   ]
 
-  // 교양 영역 데이터 추가
+  // 교양 영역 데이터
   const generalAreas = [
     { id: 'literature', name: '문학과예술' },
     { id: 'society', name: '사회와문화' },
@@ -88,7 +87,7 @@ const TimetableForm = () => {
     return null
   }
 
-  // 학점 제한 검사 함수 추가
+  // 학점 제한 검사 함수
   const checkTotalCredits = (majorCredits, generalCredits) => {
     const total = Number(majorCredits) + Number(generalCredits)
     return total <= 20
@@ -143,7 +142,7 @@ const TimetableForm = () => {
     try {
       // 서버로 전송할 데이터 구성
       const serverData = {
-        department: getCurrentDepartmentLabel(), // 학과명을 텍스트로 변환
+        department: getCurrentDepartmentLabel(),
         grade: parseInt(formData.year),
         semester: parseInt(formData.semester),
         majorCredits: parseInt(formData.majorCredits),
@@ -151,7 +150,7 @@ const TimetableForm = () => {
         liberalAreas: formData.generalAreas.map(areaId => mapAreaIdToName(areaId))
       }
       
-      console.log('서버로 전송할 데이터:', serverData)
+      console.log('서버로 전송할 데이터:', serverData);
       
       // 서버에 데이터 전송
       const response = await fetch(API_URL, {
@@ -169,36 +168,29 @@ const TimetableForm = () => {
       const data = await response.json();
       console.log('서버 응답:', data);
       
+      // 응답 유효성 검사
+      if (!data.success) {
+        throw new Error('서버에서 시간표 생성에 실패했습니다.');
+      }
+      
       // 응답 데이터와 함께 결과 페이지로 이동
       navigate('/result', { 
         state: { 
           ...formData,
-          serverResponse: data 
+          serverResponse: data
         } 
-      })
+      });
     } catch (error) {
-      console.error('서버 요청 오류:', error)
-      alert(`시간표 생성 중 오류가 발생했습니다: ${error.message}`)
-      
-      // 개발 환경에서만 더미 데이터로 이동 (테스트용)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('개발 환경에서 더미 데이터로 이동합니다.')
-        navigate('/result', { 
-          state: { 
-            ...formData,
-            serverResponse: null
-          } 
-        })
-      }
+      console.error('서버 요청 오류:', error);
+      alert(`시간표 생성 중 오류가 발생했습니다: ${error.message}`);
     } finally {
       // 로딩 상태 종료
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   const openModal = () => {
     setIsModalOpen(true)
-    // 현재 선택된 학과의 단과대학으로 초기화
     const currentCollegeId = getCurrentCollegeId()
     setSelectedCollege(currentCollegeId)
     setSelectedDeptTemp(formData.department)
@@ -219,16 +211,15 @@ const TimetableForm = () => {
   }
 
   const selectDepartment = (deptValue) => {
-    setSelectedDeptTemp(deptValue) // 임시 선택 상태 업데이트
+    setSelectedDeptTemp(deptValue)
     
-    // 선택 효과를 위한 지연
     setTimeout(() => {
       handleButtonSelect('department', deptValue)
       closeModal()
     }, 150)
   }
 
-  // 교양 영역 처리 함수 수정
+  // 교양 영역 처리 함수
   const handleGeneralAreaToggle = (areaId) => {
     setFormData(prevState => {
       const maxAreas = getMaxSelectableAreas(prevState.generalCredits)
@@ -364,8 +355,8 @@ const TimetableForm = () => {
           {/* 학년 버튼 */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">학년</label>
-            <div className="grid grid-cols-3 gap-3"> {/* grid-cols-4에서 grid-cols-3으로 변경 */}
-              {[2, 3, 4].map((year) => ( // 1 제거, [2,3,4]만 매핑
+            <div className="grid grid-cols-3 gap-3">
+              {[2, 3, 4].map((year) => (
                 <button
                   key={`year-${year}`}
                   type="button"
