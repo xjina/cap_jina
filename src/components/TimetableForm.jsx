@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'  // 추가
+import axios from 'axios' // axios 추가
 import './TimetableForm.css'
 import DepartmentModal from './DepartmentModal/DepartmentModal'
+
+// API 기본 URL 설정
+const API_URL = 'http://15.164.214.242:5000/api/timetable'
 
 const TimetableForm = () => {
   const navigate = useNavigate()  // 추가
@@ -20,6 +24,7 @@ const TimetableForm = () => {
   const [isClosing, setIsClosing] = useState(false)
   const [selectedDeptTemp, setSelectedDeptTemp] = useState(null) // 임시 선택 상태
   const closeTimeoutRef = useRef(null)
+  const [isLoading, setIsLoading] = useState(false) // 로딩 상태 추가
 
   // 단과대학 및 학과 데이터
   const collegesAndDepartments = [
@@ -104,7 +109,21 @@ const TimetableForm = () => {
     }))
   }
 
-  const handleSubmit = (e) => {
+  // 교양 영역 ID를 서버가 이해할 수 있는 이름으로 변환하는 함수
+  const mapAreaIdToName = (areaId) => {
+    const areaMap = {
+      'literature': '문학과예술',
+      'society': '사회와문화',
+      'global': '글로벌리더십',
+      'science': '과학과기술',
+      'career': '진로탐색/자기개발/창업',
+      'philosophy': '철학과역사',
+      'remote': '원격 강의 희망'
+    }
+    return areaMap[areaId] || areaId
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     // 유효성 검사
@@ -117,9 +136,64 @@ const TimetableForm = () => {
       alert('교양 학점을 선택했다면 최소 1개 이상의 교양 영역을 선택해주세요.')
       return
     }
+
+    // 로딩 상태 시작
+    setIsLoading(true)
     
-    // 결과 페이지로 이동하면서 데이터 전달
-    navigate('/result', { state: formData })
+    try {
+      // 서버로 전송할 데이터 구성
+      const serverData = {
+        department: getCurrentDepartmentLabel(), // 학과명을 텍스트로 변환
+        grade: parseInt(formData.year),
+        semester: parseInt(formData.semester),
+        majorCredits: parseInt(formData.majorCredits),
+        liberalCredits: parseInt(formData.generalCredits),
+        liberalAreas: formData.generalAreas.map(areaId => mapAreaIdToName(areaId))
+      }
+      
+      console.log('서버로 전송할 데이터:', serverData)
+      
+      // 서버에 데이터 전송
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(serverData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('서버 응답:', data);
+      
+      // 응답 데이터와 함께 결과 페이지로 이동
+      navigate('/result', { 
+        state: { 
+          ...formData,
+          serverResponse: data 
+        } 
+      })
+    } catch (error) {
+      console.error('서버 요청 오류:', error)
+      alert(`시간표 생성 중 오류가 발생했습니다: ${error.message}`)
+      
+      // 개발 환경에서만 더미 데이터로 이동 (테스트용)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('개발 환경에서 더미 데이터로 이동합니다.')
+        navigate('/result', { 
+          state: { 
+            ...formData,
+            serverResponse: null
+          } 
+        })
+      }
+    } finally {
+      // 로딩 상태 종료
+      setIsLoading(false)
+    }
   }
 
   const openModal = () => {
@@ -408,8 +482,9 @@ const TimetableForm = () => {
             <button 
               type="submit" 
               className="submit-button"
+              disabled={isLoading}
             >
-              시간표 추천
+              {isLoading ? '처리 중...' : '시간표 추천'}
             </button>
           </div>
         </form>

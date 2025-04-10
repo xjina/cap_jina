@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import './TimetableResult.css'
 
+// API URL 설정
+const API_URL = 'http://15.164.214.242:5000/api/timetable'
+
 // 더미 시간표 데이터
 const dummySchedule = [
   // 전공 과목
@@ -299,16 +302,39 @@ const dummyRemoteAlternatives = {
 
 const TimetableResult = () => {
   const location = useLocation()
-  const formData = location.state
+  const formData = location.state || {}
+  const serverResponse = formData.serverResponse || null
   const days = ['월', '화', '수', '목', '금']
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const [selectedClass, setSelectedClass] = useState(null)
   const [alternatives, setAlternatives] = useState([])
   const [showModal, setShowModal] = useState(false)
+  
+  // 서버 응답 데이터 또는 더미 데이터를 사용하여 초기화
   const [schedule, setSchedule] = useState([])
   const [remoteClasses, setRemoteClasses] = useState([])
   const [isRemoteSelected, setIsRemoteSelected] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  
+  // 교양 영역 이름 가져오기
+  const getAreaName = (areaId) => {
+    const areaMap = {
+      'literature': '문학과예술',
+      'society': '사회와문화',
+      'global': '글로벌리더십',
+      'science': '과학과기술',
+      'career': '진로탐색/자기개발/창업',
+      'philosophy': '철학과역사',
+      'remote': '원격 강의 희망'
+    }
+    return areaMap[areaId] || areaId
+  }
+  
+  // 학과명 가져오기
+  const getCurrentDepartmentLabel = () => {
+    return formData.departmentLabel || '학과 정보 없음'
+  }
   
   // 화면 크기 변경 감지
   useEffect(() => {
@@ -320,11 +346,155 @@ const TimetableResult = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
   
-  // 초기 스케줄 설정
+  // 초기 데이터 로드
   useEffect(() => {
-    setSchedule(getFilteredSchedule())
-    setRemoteClasses(getFilteredRemoteClasses())
-  }, [])
+    // 서버 응답이 있으면 서버 데이터를 사용하고, 없으면 더미 데이터 사용
+    if (serverResponse) {
+      console.log('서버에서 받은 시간표 데이터:', serverResponse)
+      
+      try {
+        // 서버에서 받은 시간표 데이터 설정
+        if (serverResponse.schedule) {
+          console.log('서버 시간표 데이터 확인:', serverResponse.schedule)
+          setSchedule(serverResponse.schedule)
+        } else {
+          console.warn('서버 응답에 시간표 데이터가 없어 더미 데이터를 사용합니다.')
+          setSchedule(getFilteredSchedule())
+        }
+        
+        // 서버에서 받은 원격 강의 데이터 설정
+        if (serverResponse.remoteClasses) {
+          console.log('서버 원격 강의 데이터 확인:', serverResponse.remoteClasses)
+          setRemoteClasses(serverResponse.remoteClasses)
+        } else {
+          console.warn('서버 응답에 원격 강의 데이터가 없어 더미 데이터를 사용합니다.')
+          setRemoteClasses(getFilteredRemoteClasses())
+        }
+      } catch (error) {
+        console.error('서버 응답 처리 중 오류 발생:', error)
+        alert('서버 응답 처리 중 오류가 발생했습니다. 더미 데이터를 사용합니다.')
+        setSchedule(getFilteredSchedule())
+        setRemoteClasses(getFilteredRemoteClasses())
+      }
+    } else {
+      console.log('서버 응답이 없어 더미 데이터를 사용합니다.')
+      setSchedule(getFilteredSchedule())
+      setRemoteClasses(getFilteredRemoteClasses())
+    }
+  }, [serverResponse])
+  
+  // 강의 선택 처리
+  const handleClassClick = (cls) => {
+    setSelectedClass(cls)
+    setIsRemoteSelected(false)
+    
+    // 서버 응답에 대체 강의 정보가 있으면 사용
+    if (serverResponse && serverResponse.alternatives && serverResponse.alternatives[cls.name]) {
+      setAlternatives(serverResponse.alternatives[cls.name])
+      setShowModal(true)
+      setTimeout(() => {
+        setIsAnimating(true)
+      }, 10)
+    } 
+    // 서버 응답이 없거나 대체 강의 정보가 없으면 더미 데이터 사용
+    else if (dummyAlternatives[cls.name]) {
+      setAlternatives(dummyAlternatives[cls.name])
+      setShowModal(true)
+      setTimeout(() => {
+        setIsAnimating(true)
+      }, 10)
+    } else {
+      alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
+    }
+  }
+
+  // 원격 강의 선택 처리
+  const handleRemoteClassClick = (cls) => {
+    setSelectedClass(cls)
+    setIsRemoteSelected(true)
+    
+    // 서버 응답에 대체 원격 강의 정보가 있으면 사용
+    if (serverResponse && serverResponse.remoteAlternatives && serverResponse.remoteAlternatives[cls.name]) {
+      setAlternatives(serverResponse.remoteAlternatives[cls.name])
+      setShowModal(true)
+      setTimeout(() => {
+        setIsAnimating(true)
+      }, 10)
+    } 
+    // 서버 응답이 없거나 대체 원격 강의 정보가 없으면 더미 데이터 사용
+    else if (dummyRemoteAlternatives[cls.name]) {
+      setAlternatives(dummyRemoteAlternatives[cls.name])
+      setShowModal(true)
+      setTimeout(() => {
+        setIsAnimating(true)
+      }, 10)
+    } else {
+      alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
+    }
+  }
+  
+  // 시간표 재생성 함수 (서버 API 연동)
+  const regenerateTimetable = async () => {
+    // 로딩 상태 시작
+    setIsLoading(true)
+    setSchedule([])
+    setRemoteClasses([])
+    
+    try {
+      // 서버로 동일한 조건으로 재요청
+      const serverData = {
+        department: getCurrentDepartmentLabel(),
+        grade: parseInt(formData.year),
+        semester: parseInt(formData.semester),
+        majorCredits: parseInt(formData.majorCredits),
+        liberalCredits: parseInt(formData.generalCredits),
+        liberalAreas: formData.generalAreas.map(areaId => getAreaName(areaId))
+      }
+      
+      console.log('재생성 요청 데이터:', serverData)
+      
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(serverData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('재생성 응답 데이터:', data);
+      
+      // 응답 데이터로 시간표 업데이트
+      if (data.schedule) {
+        setSchedule(data.schedule)
+      } else {
+        console.warn('재생성 응답에 시간표 데이터가 없어 더미 데이터를 사용합니다.')
+        setSchedule(getFilteredSchedule())
+      }
+      
+      if (data.remoteClasses) {
+        setRemoteClasses(data.remoteClasses)
+      } else {
+        console.warn('재생성 응답에 원격 강의 데이터가 없어 더미 데이터를 사용합니다.')
+        setRemoteClasses(getFilteredRemoteClasses())
+      }
+      
+    } catch (error) {
+      console.error('시간표 재생성 오류:', error)
+      alert(`시간표 재생성 중 오류가 발생했습니다: ${error.message}`)
+      
+      // 오류 발생 시 더미 데이터 사용
+      setSchedule(getFilteredSchedule())
+      setRemoteClasses(getFilteredRemoteClasses())
+    } finally {
+      // 로딩 상태 종료
+      setIsLoading(false)
+    }
+  }
 
   // 시간대 설정
   const timeSlots = [
@@ -393,44 +563,6 @@ const TimetableResult = () => {
   }
 
   const filteredRemoteClasses = getFilteredRemoteClasses()
-
-  // 강의 선택 처리
-  const handleClassClick = (cls) => {
-    setSelectedClass(cls)
-    setIsRemoteSelected(false)
-    
-    // 동일 과목의 다른 교수 강의 찾기
-    if (dummyAlternatives[cls.name]) {
-      setAlternatives(dummyAlternatives[cls.name])
-      setShowModal(true)
-      // 애니메이션 지연 적용
-      setTimeout(() => {
-        setIsAnimating(true)
-      }, 10)
-    } else {
-      // 동일 과목 다른 교수 강의가 없을 경우
-      alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
-    }
-  }
-
-  // 원격 강의 선택 처리
-  const handleRemoteClassClick = (cls) => {
-    setSelectedClass(cls)
-    setIsRemoteSelected(true)
-    
-    // 동일 과목의 다른 교수 강의 찾기
-    if (dummyRemoteAlternatives[cls.name]) {
-      setAlternatives(dummyRemoteAlternatives[cls.name])
-      setShowModal(true)
-      // 애니메이션 지연 적용
-      setTimeout(() => {
-        setIsAnimating(true)
-      }, 10)
-    } else {
-      // 동일 과목 다른 교수 강의가 없을 경우
-      alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
-    }
-  }
 
   // 모달 닫기
   const closeModal = () => {
@@ -556,19 +688,6 @@ const TimetableResult = () => {
     )
   }
 
-  // 시간표 재생성 함수
-  const regenerateTimetable = () => {
-    // 로딩 효과를 위한 상태 변경
-    setSchedule([]);
-    setRemoteClasses([]);
-    
-    // 짧은 지연 후 새로운 시간표 생성 (로딩 효과를 위함)
-    setTimeout(() => {
-      setSchedule(getFilteredSchedule());
-      setRemoteClasses(getFilteredRemoteClasses());
-    }, 500);
-  };
-
   // 대체 강의 모달 렌더링
   const renderAlternativesModal = () => {
     if (!showModal) return null;
@@ -652,69 +771,95 @@ const TimetableResult = () => {
 
   return (
     <main className="timetable-result-main">
-      <div className="timetable-result-header">
-        <h1 className="timetable-result-title">생성된 시간표</h1>
-        <div className="timetable-info">
-          <p>{formData.year}학년 {formData.semester}학기</p>
-          <p>{formData.departmentLabel}</p>
-          <p>전공 {formData.majorCredits}학점</p>
-          <p>교양 {formData.generalCredits}학점</p>
+      <div className="result-container">
+        {/* 타이틀 및 선택 정보 표시 */}
+        <div className="result-header">
+          <h1 className="result-title">시간표 추천 결과</h1>
+          <div className="selected-options">
+            <p>
+              <strong>{formData.year}학년 {formData.semester}학기</strong> | 
+              <strong> {getCurrentDepartmentLabel()}</strong> | 
+              전공 <strong>{formData.majorCredits}학점</strong> | 
+              교양 <strong>{formData.generalCredits}학점</strong>
+            </p>
+            <p className="selected-areas">
+              {formData.generalAreas && formData.generalAreas.length > 0 
+                ? `선택 영역: ${formData.generalAreas
+                    .filter(area => area !== 'remote')
+                    .map(area => getAreaName(area))
+                    .join(', ')}`
+                : '선택된 교양 영역 없음'
+              }
+              {formData.generalAreas && formData.generalAreas.includes('remote') && 
+                ' (원격 강의 희망)'}
+            </p>
+            {serverResponse ? (
+              <p className="server-response-info">
+                서버에서 생성된 시간표입니다.
+              </p>
+            ) : (
+              <p className="dummy-data-info">
+                테스트용 더미 데이터로 생성된 시간표입니다.
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-
-      <div className="timetable-container">
-        <table className="timetable">
-          <thead>
-            <tr>
-              <th className="time-header"></th>
-              {days.map(day => (
-                <th key={day} className="day-header">{day}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {timeSlots.map(({ period, time }) => (
-              <tr key={period}>
-                <td className="period-cell">{time}</td>
-                {days.map(day => {
-                  const cls = findClass(day, period)
-                  const isStart = cls?.startPeriod === period
-                  
-                  // 이전 교시에서 시작한 수업이 여기까지 이어지는 경우 렌더링하지 않음
-                  if (!shouldRenderEmpty(day, period) && !isStart) {
-                    return <td key={`${day}-${period}`} className="class-cell occupied"></td>
-                  }
-                  
-                  return (
-                    <td 
-                      key={`${day}-${period}`} 
-                      className={`class-cell ${cls ? 'has-class' : ''}`}
-                      style={{
-                        padding: cls ? '0' : undefined
-                      }}
-                    >
-                      {renderClassCell(cls, isStart)}
-                    </td>
-                  )
-                })}
+        
+        <div className="timetable-container">
+          <table className="timetable">
+            <thead>
+              <tr>
+                <th className="time-header"></th>
+                {days.map(day => (
+                  <th key={day} className="day-header">{day}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {timeSlots.map(({ period, time }) => (
+                <tr key={period}>
+                  <td className="period-cell">{time}</td>
+                  {days.map(day => {
+                    const cls = findClass(day, period)
+                    const isStart = cls?.startPeriod === period
+                    
+                    // 이전 교시에서 시작한 수업이 여기까지 이어지는 경우 렌더링하지 않음
+                    if (!shouldRenderEmpty(day, period) && !isStart) {
+                      return <td key={`${day}-${period}`} className="class-cell occupied"></td>
+                    }
+                    
+                    return (
+                      <td 
+                        key={`${day}-${period}`} 
+                        className={`class-cell ${cls ? 'has-class' : ''}`}
+                        style={{
+                          padding: cls ? '0' : undefined
+                        }}
+                      >
+                        {renderClassCell(cls, isStart)}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      {renderRemoteClasses()}
-      
-      <div className="regenerate-button-container">
-        <button 
-          className="regenerate-button"
-          onClick={regenerateTimetable}
-        >
-          동일 조건으로 시간표 재생성
-        </button>
+        {renderRemoteClasses()}
+        
+        <div className="regenerate-button-container">
+          <button 
+            className="regenerate-button"
+            onClick={regenerateTimetable}
+            disabled={isLoading}
+          >
+            {isLoading ? '처리 중...' : '동일 조건으로 시간표 재생성'}
+          </button>
+        </div>
+        
+        {renderAlternativesModal()}
       </div>
-      
-      {renderAlternativesModal()}
     </main>
   )
 }
