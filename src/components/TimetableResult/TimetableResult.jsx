@@ -370,6 +370,9 @@ const TimetableResult = () => {
     const majorLimit = parseInt(formData.majorCredits) / 3
     const generalLimit = parseInt(formData.generalCredits) / 3
 
+    // 원격 강의 희망 여부 확인
+    const wantsRemote = formData.generalAreas.includes('remote')
+
     return dummyRemoteClasses.filter(course => {
       if (course.type === 'major' && majorCount < majorLimit) {
         majorCount++
@@ -378,8 +381,11 @@ const TimetableResult = () => {
       if (course.type === 'general' && generalCount < generalLimit) {
         // 교양 영역이 선택되어 있고, 해당 영역의 과목인 경우만 포함
         if (formData.generalAreas && formData.generalAreas.includes(course.area)) {
-          generalCount++
-          return true
+          // 원격 강의 희망이 선택된 경우에만 원격 강의를 포함
+          if (wantsRemote) {
+            generalCount++
+            return true
+          }
         }
       }
       return false
@@ -512,7 +518,19 @@ const TimetableResult = () => {
 
   // 원격 강의 바 렌더링
   const renderRemoteClasses = () => {
-    if (remoteClasses.length === 0) return null
+    if (remoteClasses.length === 0) {
+      if (formData.generalAreas.includes('remote')) {
+        return (
+          <div className="remote-classes-container">
+            <h2 className="remote-classes-title">원격 강의</h2>
+            <div className="no-remote-classes">
+              선택한 교양 영역에 해당하는 원격 강의가 없습니다.
+            </div>
+          </div>
+        )
+      }
+      return null
+    }
     
     return (
       <div className="remote-classes-container">

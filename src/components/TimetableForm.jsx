@@ -61,7 +61,8 @@ const TimetableForm = () => {
     { id: 'global', name: '글로벌리더십' },
     { id: 'science', name: '과학과기술' },
     { id: 'career', name: '진로탐색/자기개발/창업' },
-    { id: 'philosophy', name: '철학과역사' }
+    { id: 'philosophy', name: '철학과역사' },
+    { id: 'remote', name: '원격 강의 희망' }
   ]
 
   // 현재 선택된 학과 정보 가져오기
@@ -153,11 +154,21 @@ const TimetableForm = () => {
     }, 150)
   }
 
-  // 교양 영역 처리 함수 추가
+  // 교양 영역 처리 함수 수정
   const handleGeneralAreaToggle = (areaId) => {
     setFormData(prevState => {
       const maxAreas = getMaxSelectableAreas(prevState.generalCredits)
       const isSelected = prevState.generalAreas.includes(areaId)
+
+      // 원격 강의 희망은 다른 영역과 독립적으로 선택 가능
+      if (areaId === 'remote') {
+        return {
+          ...prevState,
+          generalAreas: isSelected 
+            ? prevState.generalAreas.filter(id => id !== 'remote')
+            : [...prevState.generalAreas.filter(id => id !== 'remote'), 'remote']
+        }
+      }
 
       // 이미 선택된 경우는 항상 제거 가능
       if (isSelected) {
@@ -316,7 +327,7 @@ const TimetableForm = () => {
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="w-full py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-left text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-kmu-blue focus:border-kmu-blue transition-all duration-200 flex justify-between items-center"
+              className="department-select-button"
             >
               <span>{getCurrentDepartmentLabel()}</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
@@ -366,11 +377,11 @@ const TimetableForm = () => {
                 <button
                   key={area.id}
                   type="button"
-                  className={`text-left px-4 py-3 rounded-md border ${
+                  className={`general-area-button ${
                     isGeneralAreaSelected(area.id)
-                      ? 'border-kmu-blue bg-blue-50 text-kmu-blue'
-                      : 'border-gray-300 hover:bg-gray-50'
-                  } transition-all duration-200`}
+                      ? 'general-area-button-selected'
+                      : 'general-area-button-unselected'
+                  }`}
                   onClick={() => handleGeneralAreaToggle(area.id)}
                 >
                   <div className="flex items-center">
@@ -396,7 +407,7 @@ const TimetableForm = () => {
           <div className="flex justify-center">
             <button 
               type="submit" 
-              className="bg-kmu-blue text-white px-6 sm:px-8 md:px-10 py-3 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-medium text-base sm:text-lg shadow-md hover:shadow-lg"
+              className="submit-button"
             >
               시간표 추천
             </button>
