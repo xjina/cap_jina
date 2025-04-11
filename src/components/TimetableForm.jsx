@@ -4,7 +4,7 @@ import './TimetableForm.css'
 import DepartmentModal from './DepartmentModal/DepartmentModal'
 
 // API 기본 URL 설정
-const API_URL = 'http://15.164.214.242:5000/api/timetable'
+const API_URL = 'https://kmutime.duckdns.org/api/timetable'
 
 const TimetableForm = () => {
   const navigate = useNavigate()
@@ -122,72 +122,78 @@ const TimetableForm = () => {
     return areaMap[areaId] || areaId
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    // 유효성 검사
-    if (!formData.department) {
-      alert('학과를 선택해주세요.')
-      return
-    }
-    
-    if (formData.generalCredits !== '0' && formData.generalAreas.length === 0) {
-      alert('교양 학점을 선택했다면 최소 1개 이상의 교양 영역을 선택해주세요.')
-      return
-    }
-
-    // 로딩 상태 시작
-    setIsLoading(true)
-    
-    try {
-      // 서버로 전송할 데이터 구성
-      const serverData = {
-        department: getCurrentDepartmentLabel(),
-        grade: parseInt(formData.year),
-        semester: parseInt(formData.semester),
-        majorCredits: parseInt(formData.majorCredits),
-        liberalCredits: parseInt(formData.generalCredits),
-        liberalAreas: formData.generalAreas.map(areaId => mapAreaIdToName(areaId))
-      }
-      
-      console.log('서버로 전송할 데이터:', serverData);
-      
-      // 서버에 데이터 전송
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(serverData)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log('서버 응답:', data);
-      
-      // 응답 유효성 검사
-      if (!data.success) {
-        throw new Error('서버에서 시간표 생성에 실패했습니다.');
-      }
-      
-      // 응답 데이터와 함께 결과 페이지로 이동
-      navigate('/result', { 
-        state: { 
-          ...formData,
-          serverResponse: data
-        } 
-      });
-    } catch (error) {
-      console.error('서버 요청 오류:', error);
-      alert(`시간표 생성 중 오류가 발생했습니다: ${error.message}`);
-    } finally {
-      // 로딩 상태 종료
-      setIsLoading(false);
-    }
+  // handleSubmit 함수 수정
+const handleSubmit = async (e) => {
+  e.preventDefault()
+  
+  // 유효성 검사
+  if (!formData.department) {
+    alert('학과를 선택해주세요.')
+    return
   }
+  
+  // 전공과 교양 모두 0학점인 경우 체크
+  if (formData.majorCredits === '0' && formData.generalCredits === '0') {
+    alert('전공 또는 교양 학점을 선택해주세요.')
+    return
+  }
+  
+  // 교양 학점이 있는데 영역을 선택하지 않은 경우
+  if (formData.generalCredits !== '0' && formData.generalAreas.length === 0) {
+    alert('교양 학점을 선택했다면 최소 1개 이상의 교양 영역을 선택해주세요.')
+    return
+  }
+
+  setIsLoading(true)
+  
+  try {
+    const serverData = {
+      department: getCurrentDepartmentLabel(),
+      grade: parseInt(formData.year),
+      semester: parseInt(formData.semester),
+      majorCredits: parseInt(formData.majorCredits),
+      liberalCredits: parseInt(formData.generalCredits),
+      liberalAreas: formData.generalAreas.map(areaId => mapAreaIdToName(areaId))
+    }
+    
+    console.log('서버로 전송할 데이터:', serverData);
+    
+    // 서버에 데이터 전송
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(serverData)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('서버 응답:', data);
+    
+    // 응답 유효성 검사
+    if (!data.success) {
+      throw new Error('서버에서 시간표 생성에 실패했습니다.');
+    }
+    
+    // 응답 데이터와 함께 결과 페이지로 이동
+    navigate('/result', { 
+      state: { 
+        ...formData,
+        serverResponse: data
+      } 
+    });
+  } catch (error) {
+    console.error('서버 요청 오류:', error);
+    alert(`시간표 생성 중 오류가 발생했습니다: ${error.message}`);
+  } finally {
+    // 로딩 상태 종료
+    setIsLoading(false);
+  }
+}
 
   const openModal = () => {
     setIsModalOpen(true)
@@ -317,7 +323,7 @@ const TimetableForm = () => {
   }, [isModalOpen])
 
   // 학점 옵션 배열
-  const creditOptions = [3, 6, 9, 12, 15, 18]
+  const creditOptions = [0, 3, 6, 9, 12, 15, 18]
 
   // 버튼 스타일 클래스
   const getButtonClass = (currentValue, buttonValue) => {
@@ -403,8 +409,10 @@ const TimetableForm = () => {
 
           {/* 전공학점 버튼 */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">전공학점</label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              전공학점 (선택: {formData.majorCredits}학점)
+            </label>
+            <div className="grid grid-cols-3 sm:grid-cols-7 gap-3">
               {creditOptions.map((credit) => (
                 <button
                   key={`major-${credit}`}
@@ -420,9 +428,10 @@ const TimetableForm = () => {
 
           {/* 교양학점 섹션 */}
           <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-3">교양학점</label>
-            {/* 교양학점 수 선택 */}
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              교양학점 (선택: {formData.generalCredits}학점)
+            </label>
+            <div className="grid grid-cols-3 sm:grid-cols-7 gap-3 mb-4">
               {creditOptions.map((credit) => (
                 <button
                   key={`general-${credit}`}
@@ -435,37 +444,43 @@ const TimetableForm = () => {
               ))}
             </div>
             
-            {/* 교양 영역 선택 */}
-            <label className="block text-sm font-medium text-gray-700 mb-3">교양 영역 선택</label>
-            <div className="grid grid-cols-2 gap-3">
-              {generalAreas.map((area) => (
-                <button
-                  key={area.id}
-                  type="button"
-                  className={`general-area-button ${
-                    isGeneralAreaSelected(area.id)
-                      ? 'general-area-button-selected'
-                      : 'general-area-button-unselected'
-                  }`}
-                  onClick={() => handleGeneralAreaToggle(area.id)}
-                >
-                  <div className="flex items-center">
-                    <div className={`w-4 h-4 border rounded mr-3 ${
-                      isGeneralAreaSelected(area.id)
-                        ? 'bg-kmu-blue border-kmu-blue'
-                        : 'border-gray-400'
-                    }`}>
-                      {isGeneralAreaSelected(area.id) && (
-                        <svg className="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    {area.name}
-                  </div>
-                </button>
-              ))}
-            </div>
+            {/* 교양 영역 선택은 교양학점이 0이 아닐 때만 표시 */}
+            {formData.generalCredits !== '0' && (
+              <>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  교양 영역 선택
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {generalAreas.map((area) => (
+                    <button
+                      key={area.id}
+                      type="button"
+                      className={`general-area-button ${
+                        isGeneralAreaSelected(area.id)
+                          ? 'general-area-button-selected'
+                          : 'general-area-button-unselected'
+                      }`}
+                      onClick={() => handleGeneralAreaToggle(area.id)}
+                    >
+                      <div className="flex items-center">
+                        <div className={`w-4 h-4 border rounded mr-3 ${
+                          isGeneralAreaSelected(area.id)
+                            ? 'bg-kmu-blue border-kmu-blue'
+                            : 'border-gray-400'
+                        }`}>
+                          {isGeneralAreaSelected(area.id) && (
+                            <svg className="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                        {area.name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {/* 제출 버튼 */}

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import './TimetableResult.css'
 
 // API URL 설정
-const API_URL = 'http://15.164.214.242:5000/api/timetable'
+const API_URL = 'https://kmutime.duckdns.org/api/timetable'
 
 // 색상 배열을 전역으로 정의
 const COLORS = [
