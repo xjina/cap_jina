@@ -64,7 +64,7 @@ const TimetableForm = () => {
     { id: 'society', name: '사회와문화' },
     { id: 'global', name: '글로벌리더십' },
     { id: 'science', name: '과학과기술' },
-    { id: 'career', name: '진로탐색/자기개발/창업' },
+    { id: 'career', name: '진로탐색/자기계발/창업' },
     { id: 'philosophy', name: '철학과역사' },
     { id: 'remote', name: '원격 강의 희망' }
   ]
@@ -115,7 +115,7 @@ const TimetableForm = () => {
       'society': '사회와문화',
       'global': '글로벌리더십',
       'science': '과학과기술',
-      'career': '진로탐색/자기개발/창업',
+      'career': '진로탐색/자기계발/창업',
       'philosophy': '철학과역사',
       'remote': '원격 강의 희망'
     }
