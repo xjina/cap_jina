@@ -127,19 +127,42 @@ const transformServerData = (serverResponse) => {
 };
 
 const TimetableResult = () => {
-  const location = useLocation()
-  const formData = location.state || {}
-  console.log('TimetableResult 컴포넌트 마운트 - formData:', formData);
-  const serverResponse = formData.serverResponse || null
+  const location = useLocation();
+  const formData = location.state || {};
+  const { serverResponse } = formData;
+
+  const [schedule, setSchedule] = useState([]);
+  const [remoteClasses, setRemoteClasses] = useState([]);
+  const [alternatives, setAlternatives] = useState({});
+
+  useEffect(() => {
+    if (serverResponse) {
+      console.log('받은 시간표 데이터:', serverResponse);
+      
+      // 데이터 구조 검증
+      const {
+        schedule = [],
+        remoteClasses = [],
+        alternatives = {}
+      } = serverResponse;
+
+      setSchedule(schedule);
+      setRemoteClasses(remoteClasses);
+      setAlternatives(alternatives);
+    } else {
+      console.log('서버 응답이 없어 더미 데이터를 사용합니다.');
+      setSchedule(getFilteredSchedule());
+      setRemoteClasses([]);
+      setAlternatives({});
+    }
+  }, [serverResponse]);
+
   const days = ['월', '화', '수', '목', '금']
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const [selectedClass, setSelectedClass] = useState(null)
-  const [alternatives, setAlternatives] = useState([])
   const [showModal, setShowModal] = useState(false)
   
   // 서버 응답 데이터를 사용하여 초기화
-  const [schedule, setSchedule] = useState([])
-  const [remoteClasses, setRemoteClasses] = useState([])
   const [isRemoteSelected, setIsRemoteSelected] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -200,36 +223,111 @@ const TimetableResult = () => {
   }, [serverResponse]);
   
   // 강의 선택 처리
-  const handleClassClick = (cls) => {
+  const handleClassClick = async (cls) => {
     setSelectedClass(cls)
     setIsRemoteSelected(false)
+    setIsLoading(true)
     
-    // 서버 응답에 대체 강의 정보가 있으면 사용
-    if (serverResponse && serverResponse.alternatives && serverResponse.alternatives[cls.name]) {
-      setAlternatives(serverResponse.alternatives[cls.name])
-      setShowModal(true)
+    try {
+      // 과목 코드 추출 (예: major-12147-03-월 -> 12147-03)
+      const codeMatch = cls.id.match(/[^-]+-([^-]+-[^-]+)/);
+      const code = codeMatch ? codeMatch[1] : null;
+      
+      if (!code) {
+        throw new Error('과목 코드를 추출할 수 없습니다.');
+      }
+      
+      console.log('선택한 과목 코드:', code);
+      
+      // 대체 강의 조회 API 호출
+      const response = await fetch(`https://kmutime.duckdns.org/api/alternatives?code=${code}`);
+      
+      if (!response.ok) {
+        throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('대체 강의 응답:', responseData);
+      
+      // 서버 응답 구조에 맞게 수정
+      if (!responseData.success || !responseData.data?.alternatives) {
+        throw new Error('대체 강의 데이터가 없습니다.');
+      }
+      
+      // 대체 강의 데이터 변환
+      const alternativesData = responseData.data.alternatives.map((alt, index) => ({
+        id: `alt-${alt.code}`,
+        code: alt.code,
+        name: alt.name,
+        professor: alt.professor,
+        credit: alt.credit,
+        day: alt.time_json[0].day,
+        start_time: alt.time_json[0].start,
+        end_time: alt.time_json[0].end,
+        room: alt.time_json[0].room,
+        color: COLORS[index % COLORS.length],
+        time_json: alt.time_json
+      }));
+      
+      setAlternatives(alternativesData);
+      setShowModal(true);
       setTimeout(() => {
-        setIsAnimating(true)
-      }, 10)
-    } else {
-      alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
+        setIsAnimating(true);
+      }, 10);
+      
+    } catch (error) {
+      console.error('대체 강의 조회 오류:', error);
+      alert(`대체 강의 조회 중 오류가 발생했습니다: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   // 원격 강의 선택 처리
-  const handleRemoteClassClick = (cls) => {
+  const handleRemoteClassClick = async (cls) => {
     setSelectedClass(cls)
     setIsRemoteSelected(true)
+    setIsLoading(true)
     
-    // 서버 응답에 대체 원격 강의 정보가 있으면 사용
-    if (serverResponse && serverResponse.remoteAlternatives && serverResponse.remoteAlternatives[cls.name]) {
-      setAlternatives(serverResponse.remoteAlternatives[cls.name])
-      setShowModal(true)
+    try {
+      // 과목 코드 추출 (예: remote-general-25486-01 -> 25486-01)
+      const codeMatch = cls.id.match(/remote-[a-z]+-([^-]+-[^-]+)/);
+      const code = codeMatch ? codeMatch[1] : null;
+      
+      if (!code) {
+        throw new Error('과목 코드를 추출할 수 없습니다.');
+      }
+      
+      console.log('선택한 원격 과목 코드:', code);
+      
+      // 동일과목 다른교수 강의 조회 API 호출
+      const response = await fetch(`https://kmutime.duckdns.org/api/alternatives?code=${code}`);
+      
+      if (!response.ok) {
+        throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('대체 원격 강의 데이터:', data);
+      
+      // 대체 강의가 없는 경우
+      if (!data.alternatives || data.alternatives.length === 0) {
+        alert('이 과목에 대한 다른 교수의 강의가 없습니다.');
+        return;
+      }
+      
+      // 대체 강의 데이터 설정
+      setAlternatives(data.alternatives || []);
+      setShowModal(true);
       setTimeout(() => {
-        setIsAnimating(true)
-      }, 10)
-    } else {
-      alert('이 과목에 대한 다른 교수의 강의가 없습니다.')
+        setIsAnimating(true);
+      }, 10);
+      
+    } catch (error) {
+      console.error('대체 원격 강의 조회 오류:', error);
+      alert(`대체 원격 강의 조회 중 오류가 발생했습니다: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   }
   
@@ -241,32 +339,43 @@ const TimetableResult = () => {
     setRemoteClasses([]);
     
     try {
-      // 교양 영역이 배열인지 확인
-      if (!Array.isArray(formData.generalAreas)) {
-        console.error('교양 영역이 배열이 아닙니다:', formData.generalAreas);
-        throw new Error('교양 영역 데이터가 올바르지 않습니다.');
-      }
-
-      // 서버로 동일한 조건으로 재요청
-      const serverData = {
-        department: getCurrentDepartmentLabel(),
-        grade: parseInt(formData.year),
-        semester: parseInt(formData.semester),
-        majorCredits: parseInt(formData.majorCredits),
-        liberalCredits: parseInt(formData.generalCredits),
-        liberalAreas: formData.generalAreas.map(areaId => getAreaName(areaId))
+      // 현재 시간표에 있는 과목 코드 추출
+      const extractCode = (id) => {
+        const match = id.match(/[^-]+-([^-]+-[^-]+)/);
+        return match ? match[1] : null;
       };
       
-      console.log('재생성 요청 데이터:', serverData);
-      console.log('원본 교양 영역:', formData.generalAreas);
-      console.log('변환된 교양 영역:', serverData.liberalAreas);
+      // 오프라인 강의 코드 수집 (중복 제거)
+      const offlineCodes = [...new Set(
+        schedule.map(cls => extractCode(cls.id)).filter(Boolean)
+      )];
       
-      const response = await fetch(API_URL, {
+      // 원격 강의 코드 수집 (중복 제거)
+      const remoteCodes = [...new Set(
+        remoteClasses.map(cls => {
+          const match = cls.id.match(/remote-[^-]+-([^-]+-[^-]+)/);
+          return match ? match[1] : null;
+        }).filter(Boolean)
+      )];
+      
+      // 모든 제외 코드 합치기
+      const excludedCodes = [...offlineCodes, ...remoteCodes];
+      
+      console.log('제외할 과목 코드:', excludedCodes);
+      
+      if (excludedCodes.length === 0) {
+        alert('현재 시간표에 과목이 없어 재생성할 수 없습니다.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // 시간표 재생성 API 호출
+      const response = await fetch('https://kmutime.duckdns.org/api/alternatives/recommend', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(serverData)
+        body: JSON.stringify({ excludedCodes })
       });
       
       if (!response.ok) {
@@ -276,28 +385,20 @@ const TimetableResult = () => {
       const data = await response.json();
       console.log('재생성 응답 데이터:', data);
       
+      if (!data.success) {
+        throw new Error('서버에서 시간표 재생성에 실패했습니다.');
+      }
+      
       // 서버 응답 데이터를 앱 형식으로 변환
       const transformedData = transformServerData(data);
       
-      if (transformedData.schedule && transformedData.schedule.length > 0) {
-        setSchedule(transformedData.schedule);
-      } else {
-        console.warn('변환된 시간표가 없습니다.');
-        setSchedule([]);
-      }
-      
-      if (transformedData.remoteClasses && transformedData.remoteClasses.length > 0) {
-        setRemoteClasses(transformedData.remoteClasses);
-      } else {
-        console.warn('변환된 원격 강의가 없습니다.');
-        setRemoteClasses([]);
-      }
+      // 시간표 데이터 업데이트
+      setSchedule(transformedData.schedule || []);
+      setRemoteClasses(transformedData.remoteClasses || []);
       
     } catch (error) {
       console.error('시간표 재생성 오류:', error);
       alert(`시간표 재생성 중 오류가 발생했습니다: ${error.message}`);
-      setSchedule([]);
-      setRemoteClasses([]);
     } finally {
       // 로딩 상태 종료
       setIsLoading(false);
@@ -332,21 +433,42 @@ const TimetableResult = () => {
 
   // 다른 교수 강의로 교체
   const replaceClass = (newClass) => {
-    if (isRemoteSelected) {
-      // 원격 강의 교체
-      const updatedRemoteClasses = remoteClasses.filter(cls => cls.id !== selectedClass.id)
-      updatedRemoteClasses.push(newClass)
-      setRemoteClasses(updatedRemoteClasses)
-    } else {
-      // 일반 강의 교체
-      const updatedSchedule = schedule.filter(cls => cls.id !== selectedClass.id)
-      updatedSchedule.push(newClass)
-      setSchedule(updatedSchedule)
+    try {
+      if (isRemoteSelected) {
+        // ...원격 강의 교체 로직...
+      } else {
+        // 기존 강의 제거
+        const updatedSchedule = schedule.filter(cls => 
+          cls.id !== selectedClass.id && !(cls.name === selectedClass.name)
+        );
+        
+        // 새 강의 데이터 변환
+        const newScheduleItems = newClass.time_json.map(timeSlot => ({
+          id: `${newClass.type || 'major'}-${newClass.code}-${timeSlot.day}`,
+          name: newClass.name,
+          professor: newClass.professor,
+          type: 'major',
+          day: timeSlot.day,
+          startPeriod: convertTimeToPeroid(timeSlot.start),
+          endPeriod: convertTimeToPeroid(timeSlot.end),
+          location: timeSlot.room,
+          credits: newClass.credit,
+          color: newClass.color
+        }));
+        
+        // 새 강의 추가
+        updatedSchedule.push(...newScheduleItems);
+        setSchedule(updatedSchedule);
+        
+        console.log('강의 교체 완료:', newScheduleItems);
+      }
+      
+      closeModal();
+    } catch (error) {
+      console.error('강의 교체 중 오류:', error);
+      alert('강의 교체 중 오류가 발생했습니다.');
     }
-    
-    // 모달 닫기
-    closeModal()
-  }
+  };
 
   // 특정 교시에 해당하는 수업 찾기
   const findClass = (day, period) => {
@@ -446,7 +568,16 @@ const TimetableResult = () => {
 
   // 대체 강의 모달 렌더링
   const renderAlternativesModal = () => {
-    if (!showModal) return null;
+    if (!showModal || !selectedClass) return null;
+    
+    // 시간 포맷 함수
+    const formatTime = (timeString) => {
+      if (!timeString || timeString === "00:00") return "원격";
+      
+      // 시간 변환 (예: "10:30" -> "10시 30분")
+      const [hour, minute] = timeString.split(':');
+      return `${hour}시 ${minute}분`;
+    };
     
     return (
       <div className="timetable-modal-overlay" onClick={closeModal}>
@@ -473,8 +604,13 @@ const TimetableResult = () => {
                   <div><strong>교수:</strong> {selectedClass.professor}</div>
                   {!isRemoteSelected ? (
                     <>
-                      <div><strong>시간:</strong> {selectedClass.day}요일 {timeSlots[selectedClass.startPeriod-1].time}-{timeSlots[selectedClass.endPeriod-1].time}</div>
-                      <div><strong>위치:</strong> {selectedClass.location}</div>
+                      <div>
+                        <strong>시간:</strong> {selectedClass.day}요일 
+                        {selectedClass.startPeriod && selectedClass.endPeriod 
+                          ? ` ${timeSlots[selectedClass.startPeriod-1]?.time || ''}~${timeSlots[selectedClass.endPeriod-1]?.time || ''}교시` 
+                          : '원격'}
+                      </div>
+                      {selectedClass.location && <div><strong>위치:</strong> {selectedClass.location}</div>}
                     </>
                   ) : (
                     <>
@@ -488,13 +624,13 @@ const TimetableResult = () => {
             
             <div className="alternatives-list">
               <p><strong>대체 가능한 강의:</strong></p>
-              {alternatives.map(alt => (
+              {alternatives.map((alt, index) => (
                 <div 
-                  key={alt.id}
+                  key={alt.id || `alt-${index}`}
                   className="alternative-item"
                   style={{ 
-                    backgroundColor: `${alt.color}15`,
-                    borderLeft: `4px solid ${alt.color}`
+                    backgroundColor: `${alt.color || COLORS[index % COLORS.length]}15`,
+                    borderLeft: `4px solid ${alt.color || COLORS[index % COLORS.length]}`
                   }}
                   onClick={() => replaceClass(alt)}
                 >
@@ -503,8 +639,13 @@ const TimetableResult = () => {
                     <div><strong>교수:</strong> {alt.professor}</div>
                     {!isRemoteSelected ? (
                       <>
-                        <div><strong>시간:</strong> {alt.day}요일 {timeSlots[alt.startPeriod-1].time}-{timeSlots[alt.endPeriod-1].time}</div>
-                        <div><strong>위치:</strong> {alt.location}</div>
+                        <div>
+                          <strong>시간:</strong> {alt.day}요일 
+                          {alt.start_time && alt.end_time 
+                            ? ` (${formatTime(alt.start_time)}~${formatTime(alt.end_time)})` 
+                            : alt.time || '원격'}
+                        </div>
+                        {alt.room && <div><strong>위치:</strong> {alt.room}</div>}
                       </>
                     ) : (
                       <>
@@ -512,6 +653,7 @@ const TimetableResult = () => {
                         {alt.note && <div><strong>비고:</strong> {alt.note}</div>}
                       </>
                     )}
+                    {alt.credit && <div><strong>학점:</strong> {alt.credit}</div>}
                   </div>
                 </div>
               ))}
@@ -520,7 +662,7 @@ const TimetableResult = () => {
         </div>
       </div>
     );
-  }
+  };
 
   if (!formData) {
     return (
