@@ -103,7 +103,7 @@
 
 .class-content {
   height: 100%;
-  padding: 0.25rem;
+  padding: 0.01rem;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -111,7 +111,7 @@
 
 .class-name {
   font-weight: 600;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   margin-bottom: 0.125rem;
   word-wrap: break-word;
   word-break: break-all;
@@ -124,7 +124,7 @@
 
 .class-professor,
 .class-location {
-  font-size: 0.6rem;
+  font-size: 0.4rem;
   color: #6B7280;
   white-space: nowrap;
   overflow: hidden;

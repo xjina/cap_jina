@@ -19,26 +19,32 @@ const convertTimeToPeroid = (timeString) => {
   }
   
   const time = timeString.split(':').map(Number);
-  let hour = time[0];
+  const hour = time[0];
   const minute = time[1];
-  
-  // 오후 시간 처리 (1~8시는 오후로 간주)
-  if (hour >= 1 && hour <= 8) {
-    hour += 12;
-  }
-  
-  // 9시 기준으로 교시 계산 (9:00 = 1교시 시작)
-  if (hour < 9) return 1;
-  
-  // 시간을 분으로 변환 후 계산
   const totalMinutes = hour * 60 + minute;
-  const startMinutes = 9 * 60; // 9:00 AM
-  
-  // 75분(1시간 15분) 단위로 교시 계산
-  const period = Math.floor((totalMinutes - startMinutes) / 75) + 1;
-  
-  // 교시 범위 제한 (1-10교시)
-  return Math.max(1, Math.min(10, period));
+
+  // 교시 시간 범위 정의
+  const periods = [
+    { start: 540, end: 615, period: 1 },   // 09:00 ~ 10:15
+    { start: 630, end: 705, period: 2 },   // 10:30 ~ 11:45
+    { start: 720, end: 795, period: 3 },   // 12:00 ~ 13:15
+    { start: 810, end: 885, period: 4 },   // 13:30 ~ 14:45
+    { start: 900, end: 975, period: 5 },   // 15:00 ~ 16:15
+    { start: 975, end: 1065, period: 6 }   // 16:15 ~ 17:45
+  ];
+
+  // 해당하는 교시 찾기
+  const foundPeriod = periods.find(p => 
+    totalMinutes >= p.start && totalMinutes <= p.end
+  );
+
+  console.log('시간 변환:', {
+    입력시간: timeString,
+    분단위: totalMinutes,
+    교시: foundPeriod?.period || 1
+  });
+
+  return foundPeriod ? foundPeriod.period : 1;
 }
 
 // 서버 응답 데이터를 앱 형식으로 변환하는 함수
@@ -407,16 +413,12 @@ const TimetableResult = () => {
 
   // 시간대 설정
   const timeSlots = [
-    { period: 1, time: '9' },
-    { period: 2, time: '10' },
-    { period: 3, time: '11' },
-    { period: 4, time: '12' },
-    { period: 5, time: '1' },
-    { period: 6, time: '2' },
-    { period: 7, time: '3' },
-    { period: 8, time: '4' },
-    { period: 9, time: '5' },
-    { period: 10, time: '6' }
+    { period: 1, time: '1' },
+    { period: 2, time: '2' },
+    { period: 3, time: '3' },
+    { period: 4, time: '4' },
+    { period: 5, time: '5' },
+    { period: 6, time: '6' }
   ]
 
   // 모달 닫기
@@ -434,39 +436,65 @@ const TimetableResult = () => {
   // 다른 교수 강의로 교체
   const replaceClass = (newClass) => {
     try {
+      console.log('대체할 강의 데이터:', newClass);
+      
       if (isRemoteSelected) {
-        // ...원격 강의 교체 로직...
-      } else {
-        // 기존 강의 제거
-        const updatedSchedule = schedule.filter(cls => 
-          cls.id !== selectedClass.id && !(cls.name === selectedClass.name)
+        // 원격 강의 교체
+        const updatedRemoteClasses = remoteClasses.filter(cls => 
+          cls.id !== selectedClass.id
         );
         
-        // 새 강의 데이터 변환
+        // 새 원격 강의 변환 및 추가
+        const transformedClass = {
+          id: `remote-${newClass.type || 'general'}-${newClass.code}`,
+          name: newClass.name,
+          professor: newClass.professor,
+          type: newClass.type || 'general',
+          area: newClass.area || selectedClass.area,
+          credits: newClass.credit || 3,
+          note: newClass.note || '',
+          color: COLORS[updatedRemoteClasses.length % COLORS.length]
+        };
+        
+        updatedRemoteClasses.push(transformedClass);
+        setRemoteClasses(updatedRemoteClasses);
+        console.log('원격 강의 교체 완료:', transformedClass);
+      } else {
+        // 같은 과목명, 같은 교수의 기존 강의 모두 제거
+        const updatedSchedule = schedule.filter(cls => 
+          !(cls.name === selectedClass.name && cls.professor === selectedClass.professor)
+        );
+        
+        // 새 강의 데이터가 있는지 확인
+        if (!newClass.time_json || newClass.time_json.length === 0) {
+          throw new Error('새 강의의 시간 정보가 없습니다.');
+        }
+        
+        // 새 강의 변환
+        const newClassColor = COLORS[updatedSchedule.length % COLORS.length];
         const newScheduleItems = newClass.time_json.map(timeSlot => ({
           id: `${newClass.type || 'major'}-${newClass.code}-${timeSlot.day}`,
           name: newClass.name,
           professor: newClass.professor,
-          type: 'major',
+          type: newClass.type || 'major',
           day: timeSlot.day,
           startPeriod: convertTimeToPeroid(timeSlot.start),
           endPeriod: convertTimeToPeroid(timeSlot.end),
-          location: timeSlot.room,
-          credits: newClass.credit,
-          color: newClass.color
+          location: timeSlot.room || '',
+          credits: newClass.credit || 3,
+          color: newClassColor // 같은 강의의 여러 시간대는 같은 색상 사용
         }));
         
         // 새 강의 추가
         updatedSchedule.push(...newScheduleItems);
         setSchedule(updatedSchedule);
-        
-        console.log('강의 교체 완료:', newScheduleItems);
+        console.log('일반 강의 교체 완료:', newScheduleItems);
       }
       
       closeModal();
     } catch (error) {
       console.error('강의 교체 중 오류:', error);
-      alert('강의 교체 중 오류가 발생했습니다.');
+      alert('강의 교체 중 오류가 발생했습니다: ' + error.message);
     }
   };
 
@@ -607,7 +635,7 @@ const TimetableResult = () => {
                       <div>
                         <strong>시간:</strong> {selectedClass.day}요일 
                         {selectedClass.startPeriod && selectedClass.endPeriod 
-                          ? ` ${timeSlots[selectedClass.startPeriod-1]?.time || ''}~${timeSlots[selectedClass.endPeriod-1]?.time || ''}교시` 
+                          ? ` ${timeSlots[selectedClass.startPeriod-1]?.time || ''}~${timeSlots[selectedClass.endPeriod-1]?.time || ''}` 
                           : '원격'}
                       </div>
                       {selectedClass.location && <div><strong>위치:</strong> {selectedClass.location}</div>}
