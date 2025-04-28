@@ -514,31 +514,21 @@ const TimetableResult = () => {
     
     if (isStart) {
       const rowSpan = cls.endPeriod - cls.startPeriod + 1
-      // 고정 픽셀 높이 계산
-      const heightPx = isMobile ? 35 * rowSpan : 50 * rowSpan
-      
+
       return (
         <div 
           className="class-content"
           style={{ 
             backgroundColor: `${cls.color}15`,
-            borderLeft: `4px solid ${cls.color}`,
-            height: `${heightPx}px`,
+            borderLeft: `2px solid ${cls.color}`,
+            height: `60px`,
             cursor: 'pointer'
           }}
           onClick={() => handleClassClick(cls)}
         >
           <div className="class-name">{cls.name}</div>
-          {/* 모바일에서는 정보를 줄여서 표시 */}
-          {!isMobile && (
-            <>
-              <div className="class-professor">{cls.professor}</div>
-              <div className="class-location">{cls.location}</div>
-            </>
-          )}
-          {isMobile && rowSpan > 1 && (
-            <div className="class-professor">{cls.professor}</div>
-          )}
+          <div className="class-professor">{cls.professor}</div>
+          <div className="class-location">{cls.location}</div>
         </div>
       )
     }

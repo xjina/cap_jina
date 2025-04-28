@@ -86,7 +86,7 @@
   border: 1px solid #e5e7eb;
   vertical-align: top;
   position: relative;
-  height: 40px;
+  height: 60px;
   padding: 0.25rem;
 }
 
@@ -96,8 +96,8 @@
 
 .class-cell.occupied {
   padding: 0;
-  border-top: none;
-  border-bottom: none;
+  /* border-top: none;
+  border-bottom: none; */
   background-color: transparent;
 }
 
@@ -110,8 +110,8 @@
 }
 
 .class-name {
-  font-weight: 600;
-  font-size: 0.6rem;
+  font-weight: 800;
+  font-size: 0.5rem;
   margin-bottom: 0.125rem;
   word-wrap: break-word;
   word-break: break-all;
@@ -359,7 +359,7 @@
   }
 
   .class-cell {
-    height: 50px;
+    height: 0px;
   }
 
   .class-name {
