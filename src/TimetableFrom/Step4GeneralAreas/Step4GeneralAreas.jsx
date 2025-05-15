@@ -1,5 +1,5 @@
 // Step4- 교양 영역 선택 단계
-import React from "react";
+import "./Step4.css";
 
 const Step4GeneralAreas = ({
   formData,

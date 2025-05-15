@@ -1,10 +1,10 @@
 //timetableForm 메인 화면
 import React, { useState } from "react";
-import ProgressBar from "./ProgressBar";
-import Step1YearSemester from "./Step1YearSemester";
-import Step2Department from "./Step2Department";
-import Step3Credits from "./Step3Credits";
-import Step4GeneralAreas from "./Step4GeneralAreas";
+import ProgressBar from "./ProgressBar/ProgressBar";
+import Step1YearSemester from "./Step1YearSemester/Step1YearSemester";
+import Step2Department from "./Step2Department/Step2Department";
+import Step3Credits from "./Step3Credits/Step3Credits";
+import Step4GeneralAreas from "./Step4GeneralAreas/Step4GeneralAreas";
 import "./TimetableFormStyles.css";
 
 const mapAreaIdToName = (areaId) => {

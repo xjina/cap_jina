@@ -1,6 +1,7 @@
 //Step2 - 학과 선택 단계
 import React, { useState, useEffect } from "react";
-import collegesAndDepartments from "./Department";
+import "./Step2.css";
+import collegesAndDepartments from "./Department"; //학과 데이터
 
 const Step2Department = ({
   formData,

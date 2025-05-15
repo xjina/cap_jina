@@ -1,5 +1,5 @@
 // Step3 - 학점 선택 단계
-import React from "react";
+import "./Step3.css";
 
 const Step3Credits = ({
   formData,

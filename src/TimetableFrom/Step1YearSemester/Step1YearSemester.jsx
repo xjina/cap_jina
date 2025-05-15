@@ -1,8 +1,7 @@
 //Step1 - 학년 및 학기 선택 단계
-import "./TimetableForm";
+import "./Step1.css";
 
 const Step1YearSemester = ({ formData, updateFormData, goToNextStep }) => {
-  // 버튼 스타일 클래스
   const getButtonClass = (currentValue, buttonValue) => {
     return currentValue === buttonValue ? "button-active" : "button-inactive";
   };

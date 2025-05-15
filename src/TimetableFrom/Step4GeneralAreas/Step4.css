@@ -1,0 +1,93 @@
+/* Step4 - 교양 영역 선택 스타일 */
+.areas-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.areas-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .areas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.area-button {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-width: 1px;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.area-button-selected {
+  background-color: #ebf5ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.area-button-unselected {
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.area-button-unselected:hover {
+  background-color: #f9fafb;
+}
+
+.checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-width: 1px;
+  border-radius: 0.25rem;
+  margin-right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-selected {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.checkbox-unselected {
+  border-color: #9ca3af;
+}
+
+.checkbox-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: white;
+}
+
+.area-name {
+  flex: 1;
+  text-align: left;
+}
+
+.tag {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  background-color: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8rem;
+}
+
+.loading-indicator {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
