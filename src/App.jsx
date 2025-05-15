@@ -1,8 +1,8 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Header from './components/Header/Header'
-import TimetableForm from './components/TimetableForm'
-import TimetableResult from './components/TimetableResult/TimetableResult'
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Header from "./components/Header/Header";
+import TimetableResult from "./components/TimetableResult/TimetableResult";
+import TimetableForm from "./components/TimetableFrom/TimetableForm";
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
         </Routes>
       </div>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -1,0 +1,104 @@
+/* ProgressBar 스타일 */
+.progress-container {
+  width: 100%;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-step-pending {
+  color: #9ca3af;
+}
+
+.progress-step-active {
+  color: #1e40af;
+  font-weight: 500;
+}
+
+.progress-step-completed {
+  color: #2563eb;
+}
+
+.progress-step-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+}
+
+.progress-step-circle-pending {
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+}
+
+.progress-step-circle-active {
+  background-color: #2563eb;
+  color: white;
+}
+
+.progress-step-circle-completed {
+  background-color: #dbeafe;
+  border: 2px solid #2563eb;
+}
+
+.progress-bar {
+  position: relative;
+  height: 0.5rem;
+  background-color: #e5e7eb;
+  margin-bottom: 0.25rem;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0.5rem;
+  background-color: #2563eb;
+  border-radius: 9999px;
+  transition: width 0.3s ease-out;
+}
+
+.progress-titles {
+  display: flex;
+  justify-content: space-between;
+}
+
+.progress-title {
+  font-size: 0.75rem;
+}
+
+.progress-title-pending {
+  color: #9ca3af;
+}
+
+.progress-title-active {
+  color: #1e40af;
+  font-weight: 500;
+}
+
+.progress-title-completed {
+  color: #2563eb;
+}
+
+.text-align-left {
+  text-align: left;
+}
+
+.text-align-center {
+  text-align: center;
+}
+
+.text-align-right {
+  text-align: right;
+}
