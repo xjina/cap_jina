@@ -86,7 +86,7 @@ const Step3Credits = ({
         <label className="step-label">
           전공학점 (선택: {formData.majorCredits}학점)
         </label>
-        <div className="grid grid-cols-7 gap-2">
+        <div className="credits-grid">
           {creditOptions.map((credit) => (
             <button
               key={`major-${credit}`}

@@ -1,5 +1,6 @@
 //timetableForm 메인 화면
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ProgressBar from "./ProgressBar/ProgressBar";
 import Step1YearSemester from "./Step1YearSemester/Step1YearSemester";
 import Step2Department from "./Step2Department/Step2Department";
@@ -21,6 +22,7 @@ const mapAreaIdToName = (areaId) => {
 };
 
 const TimetableForm = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [slideDirection, setSlideDirection] = useState("slide-left");
   const [formData, setFormData] = useState({
@@ -83,9 +85,21 @@ const TimetableForm = () => {
         }
       );
 
-      // API 호출을 시뮬레이션하기 위한 타임아웃
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      if (!response.ok) {
+        throw new Error(
+          `서버 응답 오류: ${response.status} ${response.statusText}`
+        );
+      }
 
+      const data = await response.json();
+      console.log("서버 응답:", data);
+
+      // 응답 유효성 검사
+      if (!data.success) {
+        throw new Error("서버에서 시간표 생성에 실패했습니다.");
+      }
+
+      // 응답 데이터와 함께 결과 페이지로 이동
       navigate("/result", {
         state: {
           ...formData,
@@ -93,9 +107,10 @@ const TimetableForm = () => {
         },
       });
     } catch (error) {
-      console.error("시간표 생성 오류:", error);
+      console.error("서버 요청 오류:", error);
       alert(`시간표 생성 중 오류가 발생했습니다: ${error.message}`);
     } finally {
+      // 로딩 상태 종료
       setIsLoading(false);
     }
   };
