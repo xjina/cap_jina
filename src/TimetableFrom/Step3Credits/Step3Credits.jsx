@@ -98,7 +98,7 @@ const Step3Credits = ({
               }
               onClick={() => handleMajorCreditSelect(String(credit))}
             >
-              {credit}
+              {credit}학점
             </button>
           ))}
         </div>
@@ -121,7 +121,7 @@ const Step3Credits = ({
               }
               onClick={() => handleGeneralCreditSelect(String(credit))}
             >
-              {credit}
+              {credit}학점
             </button>
           ))}
         </div>

@@ -56,7 +56,7 @@
   transition: width 0.5s ease-out;
 }
 
-.timetable-container {
+.form-container {
   position: relative;
   min-height: 400px;
   background-color: #f9fafb;
@@ -64,31 +64,31 @@
   padding: 1.5rem;
 }
 
-.timetable-inner {
+.form-inner {
   max-width: 48rem;
   margin-left: auto;
   margin-right: auto;
 }
 
 /* 헤더 스타일 */
-.timetable-header {
+.form-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.timetable-title {
+.form-title {
   font-size: 1.5rem;
   font-weight: 700;
   color: #1f2937;
 }
 
-.timetable-subtitle {
+.form-subtitle {
   color: #4b5563;
   margin-top: 0.5rem;
 }
 
 /* 컨텐츠 카드 스타일 */
-.timetable-card {
+.form-card {
   margin-top: 2rem;
   background-color: white;
   padding: 2rem;
@@ -97,7 +97,7 @@
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.timetable-content {
+.form-content {
   transition-property: all;
   transition-duration: 500ms;
 }
@@ -179,7 +179,7 @@
 
 /* 반응형 디자인을 위한 미디어 쿼리 */
 @media (max-width: 768px) {
-  .timetable-container {
+  .form-container {
     min-height: 500px;
   }
 }

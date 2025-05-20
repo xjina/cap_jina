@@ -1,5 +1,6 @@
 //timetableForm 메인 화면
 import React, { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ProgressBar from "./ProgressBar/ProgressBar";
 import Step1YearSemester from "./Step1YearSemester/Step1YearSemester";
@@ -65,33 +66,26 @@ const TimetableForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
+      const response = await axios.post(
         "https://kmutime.duckdns.org/api/timetable",
         {
-          method: "POST",
+          department: formData.departmentLabel,
+          grade: parseInt(formData.year),
+          semester: parseInt(formData.semester),
+          majorCredits: parseInt(formData.majorCredits),
+          liberalCredits: parseInt(formData.generalCredits),
+          liberalAreas: formData.generalAreas.map((areaId) =>
+            mapAreaIdToName(areaId)
+          ),
+        },
+        {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            department: formData.departmentLabel,
-            grade: parseInt(formData.year),
-            semester: parseInt(formData.semester),
-            majorCredits: parseInt(formData.majorCredits),
-            liberalCredits: parseInt(formData.generalCredits),
-            liberalAreas: formData.generalAreas.map((areaId) =>
-              mapAreaIdToName(areaId)
-            ),
-          }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error(
-          `서버 응답 오류: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
+      const data = response.data;
       console.log("서버 응답:", data);
 
       // 응답 유효성 검사
@@ -160,21 +154,19 @@ const TimetableForm = () => {
   };
 
   return (
-    <div className="timetable-container">
-      <div className="timetable-inner">
-        <div className="timetable-header">
-          <h1 className="timetable-title">시간표 자동 생성</h1>
-          <p className="timetable-subtitle">
+    <div className="form-container">
+      <div className="form-inner">
+        <div className="form-header">
+          <h1 className="form-title">시간표 자동 생성</h1>
+          <p className="form-subtitle">
             원하는 조건을 선택하시면 최적의 시간표를 추천해드립니다.
           </p>
         </div>
 
         <ProgressBar currentStep={currentStep} totalSteps={4} />
 
-        <div className="timetable-card">
-          <div className={`timetable-content ${slideDirection}`}>
-            {renderStep()}
-          </div>
+        <div className="form-card">
+          <div className={`form-content ${slideDirection}`}>{renderStep()}</div>
         </div>
       </div>
     </div>
