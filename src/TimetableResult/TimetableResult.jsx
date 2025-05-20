@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import './TimetableResult.css'
+import axios from 'axios';
 
 // API URL 설정
 const API_URL = 'https://kmutime.duckdns.org/api/timetable'
@@ -246,13 +247,9 @@ const TimetableResult = () => {
       console.log('선택한 과목 코드:', code);
       
       // 대체 강의 조회 API 호출
-      const response = await fetch(`https://kmutime.duckdns.org/api/alternatives?code=${code}`);
+      const response = await axios.get(`https://kmutime.duckdns.org/api/alternatives?code=${code}`);
       
-      if (!response.ok) {
-        throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
-      }
-      
-      const responseData = await response.json();
+      const responseData = response.data;
       console.log('대체 강의 응답:', responseData);
       
       // 서버 응답 구조에 맞게 수정
@@ -307,13 +304,13 @@ const TimetableResult = () => {
       console.log('선택한 원격 과목 코드:', code);
       
       // 동일과목 다른교수 강의 조회 API 호출
-      const response = await fetch(`https://kmutime.duckdns.org/api/alternatives?code=${code}`);
+      const response = await axios.get(`https://kmutime.duckdns.org/api/alternatives?code=${code}`);
       
-      if (!response.ok) {
-        throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
+      if (response.status !== 200) {
+       throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
       }
       
-      const data = await response.json();
+      const data = response.data;
       console.log('대체 원격 강의 데이터:', data);
       
       // 대체 강의가 없는 경우
@@ -376,19 +373,15 @@ const TimetableResult = () => {
       }
       
       // 시간표 재생성 API 호출
-      const response = await fetch('https://kmutime.duckdns.org/api/alternatives/recommend', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ excludedCodes })
+      const response = await axios.post('https://kmutime.duckdns.org/api/alternatives/recommend', {
+        excludedCodes
       });
-      
-      if (!response.ok) {
+    
+      if (response.status !== 200) {
         throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
       }
       
-      const data = await response.json();
+      const data = response.data;
       console.log('재생성 응답 데이터:', data);
       
       if (!data.success) {
